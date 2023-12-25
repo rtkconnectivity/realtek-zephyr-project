@@ -1,0 +1,12 @@
+manifest:
+  self:
+    path: realtek-zephyr-project
+
+  remotes:
+    - name: rtkconnectivity
+      url-base: https://github.com/rtkconnectivity
+
+  projects:
+    - name: zephyr
+      remote: rtkconnectivity
+      revision: realtek-main-v3.5.0
