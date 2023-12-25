@@ -10,3 +10,4 @@ manifest:
     - name: zephyr
       remote: rtkconnectivity
       revision: realtek-main-v3.5.0
+      import: true
