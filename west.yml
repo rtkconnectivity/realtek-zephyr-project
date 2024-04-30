@@ -15,3 +15,5 @@ manifest:
           - cmsis
           - hal_realtek
           - tinycrypt
+          - openthread
+          - mbedtls
