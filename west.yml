@@ -15,3 +15,10 @@ manifest:
           - cmsis
           - hal_realtek
           - tinycrypt
+          - openthread
+          - mbedtls
+    - name: matter
+      remote: rtkconnectivity
+      repo-path: connectedhomeip
+      path: modules/lib/matter
+      revision: v1.3.0.0
