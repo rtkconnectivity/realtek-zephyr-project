@@ -3,6 +3,14 @@
  * SPDX-License-Identifier: LicenseRef-Nordic-5-Clause
  */
 
+&ram_data {
+	reg = <0x100c00 0x1e000>;
+};
+
+&ram_code {
+	reg = <0x11ec00 0x15000>;
+};
+
 &flash {
 	partitions {
 		/delete-node/ partition@2d000;
