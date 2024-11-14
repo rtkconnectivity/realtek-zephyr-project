@@ -1,4 +1,5 @@
 # Overview
+
 Welcome to the Realtek Zephyr SDK guide.
 
 This guide will instruct you on how to develop Zephyr applications with Realtek’s Bee SoCs.
@@ -6,16 +7,17 @@ This guide will instruct you on how to develop Zephyr applications with Realtek�
 The currently supported Realtek Bee SoC series for Zephyr
 include the following:
 
--   RTL87x2G
+- RTL87x2G
+- RTL8752H
 
 Realtek Zephyr SDK contains three Github Repositories:
 
--   zephyr: forked from zephyrproject and contains Realtek's
+- zephyr: forked from zephyrproject and contains Realtek's
     realization.
 
--   hal_realtek: hal module of Realtek's SoC.
+- hal_realtek: hal module of Realtek's SoC.
 
--   realtek-zephyr-project: contains Realtek\'s applications developed
+- realtek-zephyr-project: contains Realtek's applications developed
     based on zephyr.
 
 All the repositories can be fetched from Realtek's github organization:
@@ -25,8 +27,11 @@ All the repositories can be fetched from Realtek's github organization:
 
 ## Hardware Development Environment
 
-For the detailed description about the RTL87x2G's hardware development
-environment, please reference to [RTL87x2G's Hardware Development Environment](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#hardware-development-environment).
+For the detailed description about the hardware development
+environment, please refer to :
+
+1. [RTL87x2G's Hardware Development Environment](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#hardware-development-environment)
+2. [RTL8752H's Hardware Development Environment]()
 
 ## J-Link Setup
 
@@ -40,44 +45,47 @@ First of all, download the J-Link from the link:
 between **6.18 and 7.50**. Version 7.50 is highly recommended.
 
 Second, go to the local J-Link installation directory. Typically, the
-installation directory is located at:
+default installation directory is located at:
 
--   Window: C:\\Program Files (x86)\\SEGGER\\JLink
+- Window: C:\\Program Files (x86)\\SEGGER\\JLink
 
--   MacOS: \~/Applications/SEGGER/JLink_VXXX
+- MacOS: \~/Applications/SEGGER/JLink_VXXX
 
 Then do these two steps:
 
-1.  Under the directory \\Devices, create two levels of folders named
-    Realtek\\RTL87X2G, and place the **RTL87X2G_FLASH.FLM** and
-    **RTL87X2G.JLinkScript** under the RTL87X2G folder. The
-    **RTL87X2G_FLASH.FLM** and **RTL87X2G.JLinkScript** files can be
-    obtained from the **J-link-Settings_RTL87X2G.zip** archive.
-
-2.  Add the information for RTL87x2G to the **JLinkDevices.xml** file
-    located in the J-Link installation directory. You can directly copy
-    and paste the code block provided below:
+1. Download the [`J-link-Settings.zip`](link) and unzip to `<J-Link installation directory>\Devices`
+2. Add the following snippets to the end of `<J-Link installation directory>\JLinkDevices.xml`, such as:
 
 ```html
-\<Device\>
-\<ChipInfo Vendor=\"Realtek\" Name=\"RTL87X2G\"
-Core=\"JLINK_CORE_CORTEX_M33\" WorkRAMAddr=\"0x00130000\"
-WorkRAMSize=\"0x8000\"
-JLinkScriptFile=\"Devices/Realtek/RTL87X2G/RTL87X2G.JLinkScript\" /\>
-\<FlashBankInfo Name=\"QSPI Flash\" BaseAddr=\"0x04000000\"
-MaxSize=\"0x100000\" Loader=\"Devices/Realtek/RTL87X2G/
-RTL87X2G_FLASH.FLM\" LoaderType=\"FLASH_ALGO_TYPE_CMSIS\"
-AlwaysPresent=\"1\" /\>
-\</Device\>
+<DataBase>
+  ...
+  <!--       Add RTL87X2G      -->
+  <Device>
+    <ChipInfo Vendor="Realtek" Name="RTL87X2G" Core="JLINK_CORE_CORTEX_M33" WorkRAMAddr="0x00130000"   WorkRAMSize="0x8000" JLinkScriptFile="Devices/Realtek/RTL87X2G/RTL87X2G.JLinkScript" />
+    <FlashBankInfo Name="QSPI Flash" BaseAddr="0x04000000" MaxSize="0x100000" Loader="Devices/Realtek/RTL87X2G/   RTL87X2G_FLASH.FLM" LoaderType="FLASH_ALGO_TYPE_CMSIS" AlwaysPresent="1" />
+  </Device>
+  <!--       Add RTL8752H      -->
+  <Device> 
+    <ChipInfo Vendor="Realtek" Name="RTL8752H" Core="JLINK_CORE_CORTEX_M0"
+    WorkRAMAddr="0x200000" WorkRAMSize="0x4000" JLinkScriptFile="Devices/Realtek/RTL8752H/JLinkSettings.JLinkScript"/>
+    <FlashBankInfo Name="QSPI Flash" BaseAddr="0x00800000" MaxSize="0x00100000"
+    Loader="Devices/Realtek/RTL8752H/RTL8752H_SPI_FLASH.FLM"
+    LoaderType="FLASH_ALGO_TYPE_CMSIS" AlwaysPresent="1" />
+    <FlashBankInfo Name="QSPI Flash" BaseAddr="0x08000000" MaxSize="0x01000000"
+    Loader="Devices/Realtek/RTL8752H/RTL876x_LOG_TRACE_16MB.FLM"
+    LoaderType="FLASH_ALGO_TYPE_CMSIS" AlwaysPresent="1" />
+  </Device>
+</DataBase>
 ```
 
 ### J-Link Connection
+
 The J-Link connection methods for EVB model A and B are shown in the below.
-![](images/evb_model_a.png)
+![](doc/images/evb_model_a.png)
 
 > J-Link Connection with EVB model A SWD interface
 
-![](images/evb_model_b.png)
+![](doc/images/evb_model_b.png)
 
 > J-Link Connection with EVB model B SWD interface
 
@@ -88,12 +96,12 @@ and Windows. This chapter will introduce how to get started quickly with
 command-line using Realtek's evaluation board. Specifically, this
 chapter includes:
 
-1.  How to set-up the zephyr command-line development environment on
+1. How to set-up the zephyr command-line development environment on
     your host machine.
 
-2.  How to cross-compile and generate the zephyr binary image.
+2. How to cross-compile and generate the zephyr binary image.
 
-3.  How to download images into Realtek's evaluation board and test if
+3. How to download images into Realtek's evaluation board and test if
     you are running to the zephyr application.
 
 ## Zephyr Environment Setup
@@ -130,20 +138,25 @@ code**\" in the zephyr official getting-started guide.
 west init -m https://github.com/rtkconnectivity/realtek-zephyr-project
 zephyr-rtk-project
 ```
+
 ```
 cd zephyr-rtk-project
 ```
+
 ```
 west update
 ```
 
 **MacOS & Ubuntu:**
+
 ```
 west init -m https://github.com/rtkconnectivity/realtek-zephyr-project ~/zephyr-rtk-project
 ```
+
 ```
 cd ~/zephyr-rtk-project
 ```
+
 ```
 west update
 ```
@@ -172,10 +185,12 @@ folder:
 | Targets          | Location                                                 |
 |------------------|----------------------------------------------------------|
 | rtl8762gn_evb    | boards\\arm\\rtl8762gn_evb\\rtl8762gn_evb_defconfig      |
+| rtl8752htv_evb   | boards\\arm\\rtl8752htv_evb\\rtl8752htv_evb_defconfig    |
 
 To demonstrate the configuration and build process, we take
 rtl8762gn_evb and hello_world application for example. Please locate you
 current directory to /zephyr-rtk-project/zephyr, and then run this:
+
 ```
 west build -b rtl8762gn_evb samples/hello_world
 ```
@@ -185,38 +200,43 @@ build/zephyr folder.
 
 Optionally, if you want to customize your own configurations, run this
 to activate the menuconfig.
+
 ```
 west build -b rtl8762gn_evb -t menuconfig samples/hello_world
 ```
-![](images/menuconfig.png)
+
+![](doc/images/menuconfig.png)
 
 The UI of zephyr menuconfig
 
 After configuring, you could save the configuration, exit and then run:
+
 ```
 west build
 ```
+
 The target files will be generated based on your own configurations.
 
 ## Image Download and Execution
 
-### Burn essential images of RTL87x2G 
+### Burn essential images
 
-Before burning the zephyr image into flash, you need to burn five
-essential images to make RTL87x2G work normally.
+Before burning the zephyr image into flash, you need to burn some
+essential images to make RTL87x2x work normally.
 
 
-| Image             | Function                                                                                             |
-|-------------------|------------------------------------------------------------------------------------------------------|
-| **System Config file**  | It records information about hardware configuration and Bluetooth configuration, such as configure   | BT Address, change Link number etc. Config file can be generated using MPTool.                       |
-| **OTA Header File** | It defines flash Bank layout, which is generated by MPTool.                                        |
-| **Boot Patch Image** | Entries to patch functions are retained in ROM code, so original behavior of secure ROM code can be modified or extended by patch. |
-| **System Patch Image** | Entries to patch functions are retained in ROM code, so original behavior of non-secure ROM code can be modified or extended by patch. |
-| **BT Stack Patch Image** | It can expand ROM code functions through patches and add support for stack-related features in BT Controller. |
+| Image                       | Function                                                                                                                                                                          | RTL87x2G                                                                | RTL8752H                                      |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | --------------------------------------------- |
+| **System Config file**      | It records information about hardware configuration and Bluetooth configuration, such as configure BT Address, change Link number etc. Config file can be generated using MPTool. | ✔️                                                                      | ✔️                                            |
+| **OTA Header File**         | It defines flash Bank layout, which is generated by MPTool.                                                                                                                       | ✔️                                                                      | ✔️                                            |
+| **ROM Patch Images**        | Entries to patch functions are retained in ROM code, so original behavior of ROM code can be modified or extended by patch.                                                       | 1. Boot Patch Image<br>2. System Patch Image<br>3. BT Stack Patch Image | 1. ROM Patch Image<br>2. BT Stack Patch Image |
+| **Secure Bootloader Image** | It ensures the security and integrity of the system startup process through verification and encryption technologies.                                                             | ✖️                                                                      | ✔️                                            |
+
+Tips: get above images from the "images" folder in this repo.
 
 For Windows Users, MPTool developed by Realtek is recommended to
 download these essential images. Please refer to *Section 3.5.1,
-RTL87x2G Quick Start User Guide* or *RTL87x2x MP Tool User Guide* for
+RTL87x2x Quick Start User Guide* or *RTL87x2x MP Tool User Guide* for
 instructions on how to use the MPTool.
 
 For Mac/Ubuntu Users, MPCLI Tool developed by Realtek is recommended to
@@ -227,11 +247,13 @@ To enter download mode for EVB model B, press log key and download mode
 key together and then press reset key. After download, both
 keys need to be pressed again and bounce back to enter normal mode.
 
-![](images/evb_model_b_download_mode.png)
+![](doc/images/evb_model_b_download_mode.png)
 
 > Enter Download Mode for MPTool/MPCLI Tool
 
-For further download guide, please refer to [Images download, RTL87x2G Quick Start](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#images-download).
+For further download guide, please refer to :
+- [Images download, RTL87x2G Quick Start](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#images-download)
+- [Images download, RTL8752H Quick Start](Alink)
 
 ### Burn zephyr image
 
@@ -242,18 +264,22 @@ configure J-Link and connect the CPU to J-Link. Please refer to [J-Link Setup](#
 Make sure you have correctly configured J-link and connected CPU with
 J-Link. Then, you can use the command to flash your zephyr image to the
 flash.
+
 ```
 west flash
 ```
+
 ### View zephyr log
 
-To view the log printed by zephyr, Connect P3_2 (TX of UART2) to the RX
-of the RS232 module and connect P3_3 (RX of UART2) to the TX of the
-RS232 module. Open a serial communication tool that you are familiar
-with and set the baud rate of the port where the RS232 module is
-connected to 2000000.
+To view the log printed by zephyr, Connect a serial host tool to device's UART.
+
+| SoC      | Default Log UART | Tx Pin | Rx Pin | Baudrate |
+| -------- | ---------------- | ------ | ------ | -------- |
+| RTL87x2G | UART2            | P3_2   | P3_3   | 2000000  |
+| RTL8752H | UART2            | P3_0   | P3_1   | 2000000  |
 
 Press the reset key, then you will see:
+
 ```
 \*\*\* Booting Zephyr OS build f51143ae0f6d \*\*\*
 
@@ -268,9 +294,11 @@ If you see these logs, then congratulations!
 
 From a Zephyr build directory, to attach a debugger to your board and
 open up a GDB session, please type this in the command-line:
+
 ```
 west debug
 ```
+
 Note that the only supported debug runner for RTL87x2G series SoC is
 J-link. Make sure your J-link environment has been set up correctly.
 Please refer to [J-Link Setup](##J-LinkSetup).
@@ -291,6 +319,7 @@ link:
 
 When fetching the GitHub repo with \"west update\", the following error
 might occur:
+
 ```
 error: 1167 bytes of body are still expected5 MiB \| 349.00 KiB/s
 
@@ -309,13 +338,17 @@ may result in timeouts and disconnections. You can resolve this issue by
 modifying the url-base from HTTP to SSH in manifest file. You can try to
 change the url-base in
 *%your_work_space%/realtek-zephyr-project/west.yml*
+
 ```
 url-base: https://github.com/rtkconnectivity
 ```
+
 To:
+
 ```
 url-base: git@github.com:rtkconnectivity
 ```
+
 In addition to the aforementioned modification, you will also need a
 GitHub account and have your SSH public key set up on the GitHub website
 in order to pull GitHub repos using SSH. Please refer to [Github SSH
@@ -324,6 +357,6 @@ Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/a
 
 # Reference
 
-1. https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/overview/text_en/README.html
+1. <https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/overview/text_en/README.html>
 
 # Appendix
