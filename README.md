@@ -4,7 +4,7 @@ Welcome to the Realtek Zephyr SDK guide.
 
 This guide will instruct you on how to develop Zephyr applications with Realtek’s Bee SoCs.
 
-The currently supported Realtek Bee SoC series for Zephyr
+The currently supported Realtek BLE SoC series for Zephyr
 include the following:
 
 - RTL87x2G
@@ -31,7 +31,7 @@ For the detailed description about the hardware development
 environment, please refer to :
 
 1. [RTL87x2G's Hardware Development Environment](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#hardware-development-environment)
-2. [RTL8752H's Hardware Development Environment]()
+2. [RTL8752H's Hardware Development Environment](https://docs.realmcu.com/sdk/rtl8752h/common/en/latest/quick_start/text_en/README.html#hardware-development-environment)
 
 ## J-Link Setup
 
@@ -53,7 +53,7 @@ default installation directory is located at:
 
 Then do these two steps:
 
-1. Download the [`J-link-Settings.zip`](link) and unzip to `<J-Link installation directory>\Devices`
+1. Copy the [`Realtek`](jlink-settings) folder to `<J-Link installation directory>\Devices`
 2. Add the following snippets to the end of `<J-Link installation directory>\JLinkDevices.xml`, such as:
 
 ```html
@@ -109,13 +109,13 @@ chapter includes:
 ### Install dependencies
 
 Please refer to [Install
-dependencies](https://docs.zephyrproject.org/latest/develop/getting_started/index.html#install-dependencies).
+dependencies](https://docs.zephyrproject.org/3.7.0/develop/getting_started/index.html#install-dependencies).
 Make sure you have installed all the dependencies:
 
 | Tool                    | Min. Version |
 |-------------------------|--------------|
 | CMake                   | 3.20.5       |
-| Python                  | 3.8          |
+| Python                  | 3.10         |
 | Devicetree compiler     | 1.4.6        |
 | Ninja                   | /            |
 | Gperf                   | /            |
@@ -127,7 +127,7 @@ Make sure you have installed all the dependencies:
 
 Most of the steps in this section can be referenced from the [Get Zephyr
 and install Python
-dependencies](https://docs.zephyrproject.org/latest/develop/getting_started/index.html#get-zephyr-and-install-python-dependencies)
+dependencies](https://docs.zephyrproject.org/3.7.0/develop/getting_started/index.html#get-zephyr-and-install-python-dependencies)
 except the step \"**Get the Zephyr source code**\". Please use the
 following instructions instead of the steps on \"**Get the Zephyr source
 code**\" in the zephyr official getting-started guide.
@@ -170,7 +170,7 @@ The Zephyr Software Development Kit (SDK) contains toolchains for each
 of Zephyr's supported architectures, which include a compiler,
 assembler, linker and other programs required to build Zephyr
 applications. Follow the instructions in [Install the Zephyr
-SDK](https://docs.zephyrproject.org/latest/develop/getting_started/index.html#install-the-zephyr-sdk)
+SDK](https://docs.zephyrproject.org/3.7.0/develop/getting_started/index.html#install-the-zephyr-sdk)
 to install the toolchain.
 
 ## Configuration and build
@@ -184,8 +184,9 @@ folder:
 
 | Targets          | Location                                                 |
 |------------------|----------------------------------------------------------|
-| rtl8762gn_evb    | boards\\arm\\rtl8762gn_evb\\rtl8762gn_evb_defconfig      |
-| rtl8752htv_evb   | boards\\arm\\rtl8752htv_evb\\rtl8752htv_evb_defconfig    |
+| rtl8762gn_evb    | boards\\realtek\\rtl8762gn_evb\\rtl8762gn_evb_defconfig      |
+| rtl8752htv_evb   | boards\\realtek\\rtl8752htv_evb\\rtl8752htv_evb_defconfig    |
+| rtl8752h_dongle  | boards\\realtek\\rtl8752h_dongle\\rtl8752h_dongle_defconfig  |
 
 To demonstrate the configuration and build process, we take
 rtl8762gn_evb and hello_world application for example. Please locate you
@@ -236,7 +237,7 @@ Tips: get above images from the "images" folder in this repo.
 
 For Windows Users, MPTool developed by Realtek is recommended to
 download these essential images. Please refer to *Section 3.5.1,
-RTL87x2x Quick Start User Guide* or *RTL87x2x MP Tool User Guide* for
+RTL87x2x Quick Start Guide* or *RTL87x2x MP Tool User Guide* for
 instructions on how to use the MPTool.
 
 For Mac/Ubuntu Users, MPCLI Tool developed by Realtek is recommended to
@@ -253,13 +254,13 @@ keys need to be pressed again and bounce back to enter normal mode.
 
 For further download guide, please refer to :
 - [Images download, RTL87x2G Quick Start](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/quick_start/text_en/README.html#images-download)
-- [Images download, RTL8752H Quick Start](Alink)
+- [Images download, RTL8752H Quick Start](https://docs.realmcu.com/sdk/rtl8752h/common/en/latest/quick_start/text_en/README.html#images-download)
 
 ### Burn zephyr image
 
 For zephyr image, we recommend to use "west flash" command. "west flash"
 is a built-in command in zephyr. To use "west flash", you need to
-configure J-Link and connect the CPU to J-Link. Please refer to [J-Link Setup](##J-LinkSetup).
+configure J-Link and connect the CPU to J-Link. Please refer to [J-Link Setup](#j-link-setup).
 
 Make sure you have correctly configured J-link and connected CPU with
 J-Link. Then, you can use the command to flash your zephyr image to the
@@ -281,7 +282,7 @@ To view the log printed by zephyr, Connect a serial host tool to device's UART.
 Press the reset key, then you will see:
 
 ```
-\*\*\* Booting Zephyr OS build f51143ae0f6d \*\*\*
+***** Booting Zephyr OS build xxxx *****
 
 Hello World! rtl8762gn_evb
 ```
@@ -311,7 +312,7 @@ is encountered and prints or stores data according to which backends are
 enabled. For the guide of this debugging method, please refer to the
 link:
 
-<https://docs.zephyrproject.org/latest/services/debugging/coredump.html>
+<https://docs.zephyrproject.org/3.7.0/services/debugging/coredump.html>
 
 # Trouble Shooting
 
@@ -357,6 +358,7 @@ Guide](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/a
 
 # Reference
 
-1. <https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/overview/text_en/README.html>
+1. [RTL87x2G Online Document](https://docs.realmcu.com/sdk/rtl87x2g/common/en/latest/doc/overview/text_en/README.html)
+2. [RTL8752H Online Document](https://docs.realmcu.com/sdk/rtl8752h/common/en/latest/overview/text_en/README.html)
 
 # Appendix
