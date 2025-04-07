@@ -1,0 +1,13 @@
+#
+# Copyright (c) 2022 Kumar Gala <galak@kernel.org>
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+description: |
+    This binding provides resources required to build and run the
+    samples/test_rtl8773g_evb in Zephyr.
+
+compatible: "test-spi-loopback"
+
+include: [spi-device.yaml]
