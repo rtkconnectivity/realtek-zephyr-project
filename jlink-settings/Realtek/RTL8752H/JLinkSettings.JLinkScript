@@ -132,13 +132,63 @@ static void _DAPClrStickyErr(void) {
 *    (1) DLL expects target CPU to be halted / in debug mode, when leaving this function
 *    (2) May use MEM_ API functions
 */
+
+void btaon_fast_write_safe(U16 offset, U16 data)
+{
+    U32 aon_orig;
+    U32 aon_to_write;
+
+    aon_orig = JLINK_MEM_ReadU32(0x40000048);
+    aon_orig = aon_orig & 0xFFFE;
+
+    aon_to_write = 0;
+    aon_to_write = aon_to_write | (offset << 17);
+    aon_to_write = aon_to_write | (data << 1);
+
+    JLINK_MEM_WriteU32(0x40000048, aon_to_write);
+
+    aon_to_write = aon_to_write | 0x1;
+    JLINK_MEM_WriteU32(0x40000048, aon_to_write);
+
+    aon_to_write = aon_to_write & 0xFFFE;
+    JLINK_MEM_WriteU32(0x40000048, aon_to_write);
+
+    JLINK_MEM_WriteU32(0x40000048, aon_orig);
+}
+
+
+U16 btaon_fast_read_safe(U16 offset)
+{
+    U32 aon_orig;
+    U32 aon_to_read;
+    U32 read_result;
+    U16 read_data;
+
+    aon_orig = JLINK_MEM_ReadU32(0x40000048);
+    aon_orig = aon_orig & 0xFFFE;
+
+    aon_to_read = 0;
+    aon_to_read = aon_to_read | (offset << 17);
+
+    JLINK_MEM_WriteU32(0x40000048, aon_to_read);
+
+    read_result = JLINK_MEM_ReadU32(0x40000048);
+
+    read_data = (read_result >> 1) & 0xFFFF;
+
+    JLINK_MEM_WriteU32(0x40000048, aon_orig);
+
+    return read_data;
+}
+
+
 int ResetTarget(void) {
   int t;
   int r;
   U32 v;
-  U32 aon;
   U32 Fpcr;
-  
+  U16 read_data;
+
   JLINK_SYS_Report("Reset: Halt core after reset via DEMCR.VC_CORERESET.");
   JLINK_MEM_WriteU32(_DHCSR_ADDR, (_DHCSR_DBGKEY | _DHCSR_C_HALT | _DHCSR_C_DEBUGEN| _DHCSR_C_MASKINTS)); // Halt the CPU
   JLINK_MEM_WriteU32(_DEMCR_ADDR, (_DEMCR_VC_CORERESET | _DEMCR_TRCENA));              // Set vector catch on reset (to halt the CPU immediately after reset)
@@ -180,19 +230,19 @@ int ResetTarget(void) {
   // Make sure we clear the vector catch we have set before
   //
   JLINK_MEM_WriteU32(_DEMCR_ADDR, (0x0 | _DEMCR_TRCENA));
-  
-  aon = JLINK_MEM_ReadU32(0x40000048);
-  JLINK_SYS_Report1("AON Register default is: ", aon);
 
-  aon = 0x0;
-  JLINK_MEM_WriteU32(0x40000048, aon);
-  aon = 0x1;
-  JLINK_MEM_WriteU32(0x40000048, aon);
-  aon = 0x0;
-  JLINK_MEM_WriteU32(0x40000048, aon);
+  //clear pon bit to avoid entering DLPS flow
+  btaon_fast_write_safe(0x0, 0x0);
 
-  aon = JLINK_MEM_ReadU32(0x40000048);
-  JLINK_SYS_Report1("Modified AON Register is: ", aon);
+  //set Pad 3_0 from pinmux mode to SW mode to avoid Pin 3_0 multiplexing to UART1
+  read_data = btaon_fast_read_safe(0x86);
+  read_data &= ~(1 << 9);
+  btaon_fast_write_safe(0x86, read_data);
+
+  //set Pad 3_1 from pinmux mode to SW mode to avoid Pin 3_1 multiplexing to UART1
+  read_data = btaon_fast_read_safe(0x88);
+  read_data &= ~ (1 << 9);
+  btaon_fast_write_safe(0x88, read_data);
 
   return 0;
 }
