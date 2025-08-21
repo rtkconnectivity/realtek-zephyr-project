@@ -5,8 +5,6 @@ manifest:
   remotes:
     - name: rtkconnectivity
       url-base: https://github.com/rtkconnectivity
-    - name: project-chip
-      url-base: https://github.com/project-chip
 
   projects:
     - name: zephyr
@@ -19,8 +17,3 @@ manifest:
           - tinycrypt
           - openthread
           - mbedtls
-    - name: connectedhomeip
-      remote: project-chip
-      repo-path: connectedhomeip
-      path: modules/lib/connectedhomeip
-      revision: master
