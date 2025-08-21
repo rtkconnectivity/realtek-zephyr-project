@@ -1,0 +1,91 @@
+{
+  "Flash Map": "",
+  "Pack Mode": "",
+  "IC Type": "",
+  "Version": 1,
+  "Output": {
+    "Path": "",
+    "Name" : ""
+  },
+  "Files": {
+    "System Config File": {
+      "Path": ""
+    },
+    "OTA Header File": {
+      "Path": ""
+    },
+    "Secure Boot Loader Image": {
+      "Path": ""
+    },
+    "ROM Patch Image": {
+      "Path": ""
+    },
+    "Upperstack Image": {
+      "Path": ""
+    },
+    "APP Image": {
+      "Path": ""
+    },
+    "APP Data1 File": {
+      "Path": ""
+    },
+    "APP Data2 File": {
+      "Path": ""
+    },
+    "APP Data3 File": {
+      "Path": ""
+    },
+    "APP Data4 File": {
+      "Path": ""
+    },
+    "APP Data5 File": {
+      "Path": ""
+    },
+    "APP Data6 File": {
+      "Path": ""
+    },
+    "OTA Header File Bank1": {
+      "Path": ""
+    },
+    "Secure Boot Loader Image Bank1": {
+      "Path": ""
+    },
+    "ROM Patch Image Bank1": {
+      "Path": ""
+    },
+    "Upperstack Image Bank1": {
+      "Path": ""
+    },
+    "APP Image Bank1": {
+      "Path": ""
+    },
+    "APP Data1 File Bank1": {
+      "Path": ""
+    },
+    "APP Data2 File Bank1": {
+      "Path": ""
+    },
+    "APP Data3 File Bank1": {
+      "Path": ""
+    },
+    "APP Data4 File Bank1": {
+      "Path": ""
+    },
+    "APP Data5 File Bank1": {
+      "Path": ""
+    },
+    "APP Data6 File Bank1": {
+      "Path": ""
+    }
+  },
+  "User Data": [
+    {
+      "Path": "",
+      "Address": ""
+    },
+    {
+      "Path": "",
+      "Address": ""
+    }
+  ]
+}
