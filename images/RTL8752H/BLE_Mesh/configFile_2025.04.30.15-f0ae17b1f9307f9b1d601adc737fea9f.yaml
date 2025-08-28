@@ -1,0 +1,31 @@
+ConfigSetting:
+  BTAddress: [28, 63, 87, 4C, E0, 1F]
+  PSDEnable: Disable
+  LEPowerControl: Enable
+  MasterLinkNum: 0
+  SlaveLinkNum: 1
+  HCIConfig:
+    MaxHCIEventPacketNum: 10
+    MaxACL_RXPacketNum: 5
+    MaxLEControlPacketNum: 6
+    MaxLECommandPacketNum: 4
+    MaxISORXPacketNum: 10
+    MaxACL_RXPayloadSize: 251
+    MaxISORXPayloadSize: 251
+  AEConfig:
+    SupportLE_AE_ADV: Enable
+    LE_AE_ADVTaskNumber: 12
+    SupportLE_AE_SCAN_INIT: Enable
+    LE_AE_SCANTaskNumber: 8
+    LE_AE_ReportUnitNumber: 8
+    LE_AE_DuplicatedAdvFilterListSize: 16
+    LE_AE_ADVDataPacketNumber: 6
+    SupportLE_PA: Disable
+    LE_PANumber: 0
+  IsochronousConfig:
+    SupportLE_Isochronous: Disable
+    LE_CIGNumber: 0
+    LE_CISNumber: 0
+    LE_BIGNumber: 0
+    LE_BISNumber: 0
+  CheckMethod: SHA256
