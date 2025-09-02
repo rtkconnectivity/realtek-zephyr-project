@@ -35,8 +35,8 @@ See the [Realtek Zephyr SDK Wiki](https://github.com/rtkconnectivity/realtek-zep
 
 #### Boards
 
-- rtl8762gn_evb
-- rtl8752htv_evb
+- rtl87x2g_evb
+- rtl8752h_evb
 - rtl8752h_dongle
 
 ### 🚀 Getting Started

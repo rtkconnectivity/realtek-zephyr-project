@@ -1,0 +1,55 @@
+ConfigSetting:
+
+  Mode: Normal                 # Normal Mode
+  CoreMode: LDO_MODE           # LDO MODE
+  PSRAMPowerSupply: Disable    # PSRAM Power Supply
+
+  TrustZone: Disable           # TrustZone
+
+  XTAL40:
+    InternalCapCalibration: 0x3F  # 40 MHz XTAL Internal Cap Calibration (0x00-0x7F)
+    UseExtCap: internal_cap        # internal_cap / external_cap
+    AdaptiveDelay: Enable          # Adaptive XTAL Delay
+
+  RTC32kClockSrc: SDM          # User RTC 32 kHz clock src
+  SEGCOM32kClockSrc: SDM       # SECGOM 32 kHz clock src
+
+  EXT32:
+    XTALCapacity: 0x20         # EXT32 XTAL Capacity (0x00-0x3F)
+    XTALType: 12PF             # EXT32 XTAL type
+
+  BTAddress: [25, 63, 87, 4C, E0, 00]
+  PSDEnable: Enable
+  LEPowerControl: Enable
+
+  MasterLinkNum: 2
+  SlaveLinkNum: 2
+
+  HCIConfig:
+    MaxHCIEventPacketNum: 10
+    MaxACL_RXPacketNum: 7
+    MaxLEControlPacketNum: 8
+    MaxLECommandPacketNum: 2
+    MaxISORXPacketNum: 12
+    MaxACL_RXPayloadSize: 251
+    MaxISORXPayloadSize: 251
+
+  AEConfig:
+    SupportLE_AE_ADV: Enable
+    LE_AE_ADVTaskNumber: 12
+    SupportLE_AE_SCAN_INIT: Enable
+    LE_AE_SCANTaskNumber: 8
+    LE_AE_ReportUnitNumber: 8
+    LE_AE_DuplicatedAdvFilterListSize: 16
+    LE_AE_ADVDataPacketNumber: 6
+    SupportLE_PA: Enable
+    LE_PANumber: 4
+
+  IsochronousConfig:
+    SupportLE_Isochronous: Enable
+    LE_CIGNumber: 2
+    LE_CISNumber: 4
+    LE_BIGNumber: 2
+    LE_BISNumber: 4
+
+  CheckMethod: SHA256
