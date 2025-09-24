@@ -1,0 +1,155 @@
+{
+    "mptoolconfig": {
+        "port": "",
+        "baud": "1000000",
+        "appimage": {
+            "relativepath": "",
+            "file": [
+                {
+                    "id": 0,
+                    "address": "0x00802000",
+                    "name": "BANK0_OTA_HDR_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 1,
+                    "address": "0x0080A000",
+                    "name": "BANK0_FSBL_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 2,
+                    "address": "0x00803000",
+                    "name": "BANK0_ROM_PATCH_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 3,
+                    "address": "0x0080B000",
+                    "name": "BANK0_BT_STACK_PATCH_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 4,
+                    "address": "0x00815000",
+                    "name": "BANK0_UPPERSTACK_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 5,
+                    "address": "0x00815000",
+                    "name": "BANK0_APP_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 6,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA1_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 7,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA2_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 8,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA3_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 9,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA4_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 10,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA5_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 11,
+                    "address": "0x0087F000",
+                    "name": "BANK0_APP_DATA6_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 12,
+                    "address": "0x0087F000",
+                    "name": "OTAHeader_Bank1_1.0.0.1-68cecdeb82521eaf489e841a0ec06ced.bin",
+                    "enable": "1"
+                },
+                {
+                    "id": 13,
+                    "address": "0x00887000",
+                    "name": "BANK1_fsbl_MP_master_1.2.4.0_722f404-39cca44ce74c994300e91cf12a9efe96.bin",
+                    "enable": "1"
+                },
+                {
+                    "id": 14,
+                    "address": "0x00880000",
+                    "name": "BANK1_Patch_MP_release_0.0.322.2_56a2dbcd-0f32c9063d0adde2b6f25efc5ce9c4b5.bin",
+                    "enable": "1"
+                },
+                {
+                    "id": 15,
+                    "address": "0x00888000",
+                    "name": "BANK1_bt_stack_patch_MP_master_0.0.145.0_ab89e0d5-8a0ba28e91f2115962dc51fb3b13f8d0.bin",
+                    "enable": "1"
+                },
+                {
+                    "id": 16,
+                    "address": "0x00892000",
+                    "name": "BANK1_UPPERSTACK_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 17,
+                    "address": "0x00892000",
+                    "name": "BANK1_APP_.bin",
+                    "enable": "1"
+                },
+                {
+                    "id": 18,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA1_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 19,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA2_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 20,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA3_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 21,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA4_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 22,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA5_.bin",
+                    "enable": "0"
+                },
+                {
+                    "id": 23,
+                    "address": "0x008FC000",
+                    "name": "BANK1_APP_DATA6_.bin",
+                    "enable": "0"
+                }
+            ]
+        }
+    }
+}
