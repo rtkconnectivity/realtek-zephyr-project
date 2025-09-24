@@ -87,25 +87,25 @@
                     "id": 12,
                     "address": "0x0087F000",
                     "name": "BANK1_OTA_HDR_.bin",
-                    "enable": "1"
+                    "enable": "0"
                 },
                 {
                     "id": 13,
                     "address": "0x00887000",
                     "name": "BANK1_FSBL_.bin",
-                    "enable": "1"
+                    "enable": "0"
                 },
                 {
                     "id": 14,
                     "address": "0x00880000",
                     "name": "BANK1_ROM_PATCH_.bin",
-                    "enable": "1"
+                    "enable": "0"
                 },
                 {
                     "id": 15,
                     "address": "0x00888000",
                     "name": "BANK1_BT_STACK_PATCH_.bin",
-                    "enable": "1"
+                    "enable": "0"
                 },
                 {
                     "id": 16,
@@ -117,7 +117,7 @@
                     "id": 17,
                     "address": "0x00892000",
                     "name": "BANK1_APP_.bin",
-                    "enable": "1"
+                    "enable": "0"
                 },
                 {
                     "id": 18,
