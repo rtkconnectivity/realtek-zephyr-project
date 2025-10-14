@@ -1,0 +1,6 @@
+west-commands:
+  - file: tool/tool.py
+    commands:
+      - name: realtek-bee
+        class: RealtekBee
+        help: Realtek tools for west framework.

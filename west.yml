@@ -1,6 +1,7 @@
 manifest:
   self:
     path: realtek-zephyr-project
+    west-commands: tool/west-commands.yml
 
   remotes:
     - name: rtkconnectivity
