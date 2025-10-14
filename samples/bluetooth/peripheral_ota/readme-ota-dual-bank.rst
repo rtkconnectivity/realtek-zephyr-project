@@ -20,7 +20,7 @@ Download boot images. Pulling down P0_3 and reset to enter UART download mode, s
 .. code-block:: sh
 
    source ../zephyr/zephyr-env.sh
-   west realtek-bee mpcli -c com1 --json ${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/dual_bank/mptoolconfig_bank0.json -E
+   west realtek-bee mpcli -c com1 --json ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/dual_bank/mptoolconfig_bank0.json -E
 
 Build OTA APP on bank0 and download it.
 
@@ -57,20 +57,20 @@ Add image header and md5 to the image.
    west realtek-bee -d build prepend
    west realtek-bee -d build md5
 
-Copy the image (``zephyr_MP_x.x.x.x_x-xxx.bin``) from build directory to ``${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1/``.
+Copy the image (``zephyr_MP_x.x.x.x_x-xxx.bin``) from build directory to ``${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1/``.
 
-Pack the images. The packed output will be located at ``${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/ota_sample/ota_image_dual_bank/packed_image_bank1``.
+Pack the images. The packed output will be located at ``${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_dual_bank/packed_image_bank1``.
 
 .. code-block:: sh
 
    # Copy the default flash layout file
-   cp "${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/dual_bank/flash map.ini" \
-   ${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1/
+   cp "${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/dual_bank/flash map.ini" \
+   ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1/
 
    # pack
    west realtek-bee packcli -n 8752H -m OTA \
-   -s ${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1 \
-   -d ${ZEPHYR_BASE}/../realtek-zephyr-project/images/RTL8752H/ota_sample/ota_image_dual_bank/packed_image_bank1
+   -s ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_dual_bank/unpacked_image_bank1 \
+   -d ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_dual_bank/packed_image_bank1
 
 Then, try OTA with `Android/iOS OTA APP <https://docs.realmcu.com/sdk/rtl8752h/common/cn/latest/tool_set/text_cn/README.html#android-ota-app>`_. For sample convenience, the "version checking" in APP can be disabled, in this way, the image with lower version also can be updated.
 
