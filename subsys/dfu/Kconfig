@@ -1,0 +1,20 @@
+# Copyright (c) 2025 Realtek Semiconductor Corp.
+# SPDX-License-Identifier: Apache-2.0
+
+config RTK_OTA
+	bool "Realtek BLE OTA"
+    select RTK_DFU
+	default y
+
+module = OTA
+module-str = "OTA"
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config"
+
+config RTK_DFU
+    bool "Realtek BLE DFU"
+	default n
+
+parent-module = OTA
+module = DFU
+module-str = "DFU"
+source "${ZEPHYR_BASE}/subsys/logging/Kconfig.template.log_config_inherit"

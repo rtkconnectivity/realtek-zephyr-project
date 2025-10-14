@@ -1,0 +1,37 @@
+/*
+ * Copyright (c) 2025 Realtek Semiconductor Corp.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/ {
+	aliases {
+		watchdog0 = &aonwdt;
+	};
+};
+
+&{/data_ram} {
+	#address-cells = < 0x1 >;
+	#size-cells = < 0x1 >;
+	app_ram_data: memory@208800 {
+		compatible = "mmio-sram";
+		reg = < 0x208800 0xD400 >;
+	};
+	heap0: memory@216c00 {
+		compatible = "mmio-sram";
+		reg = < (0x208800+0xD400) (0x11800-0xD400) >;
+	};
+};
+
+&corewdt {
+	status = "disabled";
+	div-factor = <63>;
+};
+
+&aonwdt {
+	status = "okay";
+};
+
+&dma0 {
+	status = "okay";
+};

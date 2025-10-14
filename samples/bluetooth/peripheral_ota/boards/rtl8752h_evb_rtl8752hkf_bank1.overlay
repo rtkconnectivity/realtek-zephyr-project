@@ -1,0 +1,15 @@
+/*
+ * Copyright (c) 2025 Realtek Semiconductor Corp.
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+/delete-node/ &app_partition;
+
+&flash {
+	partitions {
+		app_partition: partition@92000 {
+			label = "app-image";
+			reg = <0x92000 (DT_SIZE_K(500))>;
+		};
+	};
+};
