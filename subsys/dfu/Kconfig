@@ -4,7 +4,7 @@
 config RTK_OTA
 	bool "Realtek BLE OTA"
     select RTK_DFU
-	default y
+	default n
 
 module = OTA
 module-str = "OTA"
