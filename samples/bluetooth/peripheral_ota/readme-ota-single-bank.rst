@@ -1,7 +1,7 @@
 Overview
 ========
 
-Here is the step-by-step guide for running RTK OTA Zephyr Sample. For detailed OTA design specifications, please refer to `RTL8752H Subsystems: OTA <https://docs.realmcu.com/sdk/rtl8752h/common/en/latest/subsystems/ota/text_en/README.html>`_.
+Here is the step-by-step guide for running Realtek OTA Zephyr Sample. For detailed OTA design specifications, please refer to `RTL8752H Subsystems: OTA <https://docs.realmcu.com/sdk/rtl8752h/common/en/latest/subsystems/ota/text_en/README.html>`_.
 
 Single Bank OTA Sample
 ======================
@@ -13,10 +13,17 @@ Start OTA Sample
 
 Download boot images. Pulling down P0_3 and reset to enter UART download mode, see `[RTL8752H EVB] Hardware Connection and Download Guide <https://github.com/rtkconnectivity/realtek-zephyr-project/wiki/%5BRTL8752H-EVB%5D-Hardware-Connection-and-Download-Guide>`_ for the Download-Mode Wiring (UART).
 
+To use west realtek extension tool, we recommend you use GIT Bash on Windows. Open a GIT bash:
+
 .. code-block:: sh
 
+   cd /%YOURWORKSPACE%/zephyr
    source zephyr-env.sh
-   west realtek-bee mpcli -c com1 --json ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/mptoolconfig.json -E
+   west realtek-bee mpcli -c comX --json ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/rtl8752h/mptoolconfig.json -E
+
+Note:
+comX is changed the serial port number, for example "com7".
+
 
 Build OTA APP image and download it.
 
@@ -60,8 +67,8 @@ Pack the images. The packed output will be located at ``${ZEPHYR_BASE}/../realte
 .. code-block:: sh
 
    # Copy the default flash layout file
-   cp "${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/flash map.ini" \
-   ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_single_bank/unpacked_image/
+   cp "${ZEPHYR_BASE}/../realtek-zephyr-project/bin/rtl8752h/flash map.ini" \
+   ${ZEPHYR_BASE}/../realtek-zephyr-project/bin//ota_sample/ota_image_single_bank/unpacked_image/
    # Pack
    west realtek-bee packcli -n 8752H -m OTA \
    -s ${ZEPHYR_BASE}/../realtek-zephyr-project/bin/RTL8752H/ota_sample/ota_image_single_bank/unpacked_image \

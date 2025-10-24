@@ -11,20 +11,20 @@
 #include <zephyr/bluetooth/gatt.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(DFU, CONFIG_DFU_LOG_LEVEL);
+LOG_MODULE_REGISTER(REALTEK_DFU, CONFIG_REALTEK_DFU_LOG_LEVEL);
 #include "log_adapter.h"
 
 #include "patch_header_check.h"
 #include "rtl876x_wdg.h"
 #include "flash_nor_device.h"
+#include "dfu_common.h"
 #include "dfu_flash.h"
 #include "dfu_api.h"
 #include "dfu_service.h"
 #include "otp.h"
-#include "board.h"
-#include "gap.h"
+#include "ota_config.h"
 #include "dfu_application.h"
-#include "silent_ota_application.h"
+#include "silent_ota.h"
 /*============================================================================*
  *                               Variables
  *============================================================================*/
@@ -39,8 +39,8 @@ static bool buffer_check_en = false;
 bool is_ota_procedure = false;
 static uint32_t dfu_resend_offset = 0;
 static uint8_t dfu_service_id;
-typedef T_APP_RESULT(*P_FUN_SERVER_GENERAL_CB)(uint8_t service_id, void *p_para);
-P_FUN_SERVER_GENERAL_CB pfn_dfu_service_cb = app_profile_callback;
+
+P_FUN_SERVER_GENERAL_CB pfn_dfu_service_cb = NULL;
 
 /*============================================================================*
  *                        Extern Declarations
@@ -50,6 +50,7 @@ void dfu_service_handle_control_point_req(struct bt_conn *conn, uint16_t length,
 
 uint8_t dfu_add_service(void *pFunc)
 {
+    pfn_dfu_service_cb = (P_FUN_SERVER_GENERAL_CB)pFunc;
     p_ota_temp_buffer_head = ota_temp_buffer_head;
     return 0;
 }
@@ -663,6 +664,7 @@ void dfu_service_handle_active_image(void)
         }
     }
 }
+
 /* implement le_update_conn_param in zephyr*/
 int le_update_connection_parameters(struct bt_conn *conn, uint16_t conn_interval_min,
                                     uint16_t conn_interval_max, uint16_t conn_latency,
@@ -1091,7 +1093,7 @@ void dfu_service_handle_control_point_req(struct bt_conn *conn, uint16_t length,
 
                     if (le_update_connection_parameters(
                             conn, conn_interval_min, conn_interval_max,
-                            conn_latency, superv_tout) == GAP_CAUSE_SUCCESS)
+                            conn_latency, superv_tout) == 0x00)  //use 0x00 replace GAP_CAUSE_SUCCESS which is realtek upperstack's MACRO
                     {
                         /* Connection Parameter Update Request sent successfully,
                          * means this procedure is in progress.

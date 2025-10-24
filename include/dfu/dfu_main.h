@@ -16,7 +16,6 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "profile_server.h"
 
 extern void *total_timer_handle;
 extern void *wait4_conn_timer_handle;

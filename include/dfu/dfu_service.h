@@ -21,7 +21,6 @@
 extern "C"  {
 #endif      /* __cplusplus */
 
-#include "profile_server.h"
 #include "patch_header_check.h"
 #include "dfu_api.h"
 
