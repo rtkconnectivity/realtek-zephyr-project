@@ -11,14 +11,15 @@
 #include <zephyr/bluetooth/gatt.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(OTA, CONFIG_OTA_LOG_LEVEL);
+LOG_MODULE_REGISTER(REALTEK_OTA, CONFIG_REALTEK_OTA_LOG_LEVEL);
 #include "log_adapter.h"
 
 #include "patch_header_check.h"
 #include "flash_map.h"
+#include "dfu_common.h"
 #include "ota_service.h"
 #include "otp.h"
-#include "board.h"
+#include "ota_config.h"
 #include "dfu_flash.h"
 #include "flash_nor_device.h"
 

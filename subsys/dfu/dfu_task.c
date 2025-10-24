@@ -5,8 +5,7 @@
  */
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
-
+LOG_MODULE_DECLARE(REALTEK_DFU, CONFIG_REALTEK_DFU_LOG_LEVEL);
 #include "os_msg.h"
 #include "os_task.h"
 #include "gap_msg.h"
@@ -14,7 +13,7 @@ LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
 #include "dfu_application.h"
 #include "dfu_main.h"
 #include "dfu_task.h"
-#include "board.h"
+#include "ota_config.h"
 
 #if (SUPPORT_NORMAL_OTA == 1)
 /*
