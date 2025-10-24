@@ -10,20 +10,18 @@
 #include <string.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
+LOG_MODULE_DECLARE(REALTEK_DFU, CONFIG_REALTEK_DFU_LOG_LEVEL);
 
-#include "gap.h"
-#include "profile_server.h"
 #include "os_timer.h"
-#include "otp_config.h" //todo: when oepn otp needn't
 #include "otp.h"
+#include "dfu_common.h"
 #include "dfu_api.h"
 #include "dfu_flash.h"
 #include "dfu_service.h"
 #include "dfu_main.h"
 #include "dfu_task.h"
 #include "dfu_application.h"
-#include "board.h"
+#include "ota_config.h"
 
 #if (SUPPORT_NORMAL_OTA == 1)
 /*============================================================================*
@@ -103,14 +101,3 @@ void dfu_timer_init(void)
     os_timer_start(&wait4_conn_timer_handle);
 }
 #endif /* SUPPORT_NORMAL_OTA */
-void dfu_main(void)
-{
-    LOG_INF("Enter DFU mode");
-    dfu_add_service(NULL);
-    /* le_gap_init(1);
-     * gap_lib_init();
-     * dfu_le_gap_init();
-     * dfu_le_profile_init();
-     * dfu_init();
-     */
-}

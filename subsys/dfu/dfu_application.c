@@ -21,7 +21,6 @@ LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
 #include "dfu_api.h"
 #include "dfu_service.h"
 #include "otp.h"
-#include "board.h"
 #include "app_msg.h"
 #include "gap.h"
 #include "gap_msg.h"
@@ -35,7 +34,6 @@ LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
 #include "dfu_flash.h"
 #include "dfu_application.h"
 #include "dfu_task.h"
-#include "board.h"
 #include "flash_nor_device.h"
 
 /*============================================================================*

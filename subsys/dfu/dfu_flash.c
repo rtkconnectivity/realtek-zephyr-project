@@ -8,7 +8,7 @@
 #include <zephyr/drivers/flash.h>
 
 #include <zephyr/logging/log.h>
-LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
+LOG_MODULE_DECLARE(REALTEK_DFU, CONFIG_REALTEK_DFU_LOG_LEVEL);
 #include "log_adapter.h"
 
 #include "aes_api.h"
@@ -20,8 +20,7 @@ LOG_MODULE_DECLARE(DFU, CONFIG_DFU_LOG_LEVEL);
 #include "rtl876x_wdg.h"
 #include "dfu_flash.h"
 #include "rtl876x_hw_sha256.h"
-#include "board.h"
-#include "otp_config.h"
+#include "ota_config.h"
 #include "flash_nor_device.h"
 #include "flash_map.h"
 
@@ -92,8 +91,6 @@ bool dfu_flash_erase_sector(uint32_t addr)
     DFU_PRINT_INFO2("<==dfu flash erase sector: addr=%x, result=%d(1:success)", addr, result);
     return result;
 }
-
-
 
 /**
 *  @brief: unlock flash is need when erase or write flash.
@@ -358,7 +355,7 @@ uint32_t dfu_get_temp_ota_bank_size_by_img_id(T_IMG_ID image_id)
     }
     else
     {
-        return patch_get_temp_ota_bank_size_by_img_id((T_IMG_ID)image_id);
+        return get_temp_ota_bank_size_by_img_id((T_IMG_ID)image_id);
     }
 }
 
