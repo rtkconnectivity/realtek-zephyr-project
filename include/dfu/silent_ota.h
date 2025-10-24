@@ -18,8 +18,6 @@
 extern "C" {
 #endif
 #include <app_msg.h>
-// #include <gap_le.h>
-#include <profile_server.h>
 
 typedef enum
 {
@@ -28,8 +26,6 @@ typedef enum
     LANTENCY_ON,
     LANTENCY_ON_CLOSE,
 } LantencyStatus;
-
-extern bool dfu_active_rst_pending;
 
 void app_handle_io_msg(T_IO_MSG io_driver_msg_recv);
 T_APP_RESULT app_profile_callback(T_SERVER_ID service_id, void *p_data);
