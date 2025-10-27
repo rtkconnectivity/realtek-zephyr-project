@@ -26,7 +26,7 @@ V1.0.4.21 Date:20241125
 2. Fix the issue of the option -e erasing the range
 
 V1.0.4.20 Date:20240927
-1. update for RTL8762H(bee3plus) write eFuse
+1. update for RTL8762H(rtl8752h) write eFuse
 
 V1.0.4.19 Date: 20240923
 1. fixed password function issue.
@@ -52,7 +52,7 @@ V1.0.4.13 Date: 20240318
 1. retry twice when erase/program/verify failed
 
 V1.0.4.12 Date: 20240206
-1. update for bee3plus
+1. update for rtl8752h
 2. support bee3pro
 
 V1.0.4.11 Date: 20240123
@@ -66,14 +66,14 @@ V1.0.4.9 Date: 20231115
 support SPI Flash Write, refer to userguide.
 
 V1.0.4.8 Date: 20230928
-support bee4 b-cut download
+support rtl87x2g b-cut download
 
 V1.0.4.7 Date: 20230818
-support bee3plus&bee4 packedimage download
+support rtl8752h&rtl87x2g packedimage download
 
 V1.0.4.6 Date: 20230602
-1.support bee4 A-CUT
-2.support bee3plus A-CUT
+1.support rtl87x2g A-CUT
+2.support rtl8752h A-CUT
 
 V1.0.4.5 Date: 20221108
 1.add --set_tx_power to set TX Power

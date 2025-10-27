@@ -87,7 +87,7 @@ extern bool switch_to_ota_mode_pending;
  * bit[1:0]: Image 0
  * bit[2N+1:2N]:Image N
 
- * Image indicator for bee3plus is as below:
+ * Image indicator for rtl8752h is as below:
  * Image 0   OTA Header File
  * Image 1   Secure Boot Loader Image
  * Image 2   ROM Patch Image

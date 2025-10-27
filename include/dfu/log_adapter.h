@@ -28,8 +28,8 @@ typedef enum
     TYPE_BEE3                   = 35,
 
     TYPE_BEE3PRO                = 36,
-    TYPE_BEE3PLUS               = 37,
-    TYPE_BEE4                   = 38,
+    TYPE_RTL8752H               = 37,
+    TYPE_RTL87X2G                   = 38,
 
     /* type 128~207 reserved for 3rd party definition */
 
@@ -37,7 +37,7 @@ typedef enum
 } T_LOG_TYPE;
 
 /* Log type current ic used */
-#define LOG_TYPE                (TYPE_BEE3PLUS)
+#define LOG_TYPE                (TYPE_RTL8752H)
 
 /* Log subtype definition */
 typedef enum
