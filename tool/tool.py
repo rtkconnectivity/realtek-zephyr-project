@@ -40,9 +40,10 @@ class RealtekBee(WestCommand):
  
     def check(self, cond, msg, exit) -> bool:
         if not cond:
-            self.wrn(msg)
             if exit:
-                sys.exit(1)
+                self.die(msg)
+            else:
+                self.dbg(msg)
             return False
         else:
             return True
@@ -61,16 +62,6 @@ class RealtekBee(WestCommand):
 
     def do_run(self, args, unknown_args):
         self.args = args
-
-        # Find the build directory and parse .config and DT.
-        build_dir = find_build_dir(args.build_dir)
-        self.check(os.path.isdir(build_dir),
-                    'no such build directory {}'.format(build_dir), True)
-        if not self.check(is_zephyr_build(build_dir),
-                "build directory {} doesn't look like a Zephyr build "
-                'directory'.format(build_dir), False):
-            build_dir = None
-
         if unknown_args:
             log.inf(f"unknown_args:{unknown_args}")
         # ToDo: get -b from IC type
@@ -86,7 +77,7 @@ class RealtekBee(WestCommand):
         for tool_class in self.tool_classes:
             if args.subcommand == tool_class.name:
                 print(f"Start {tool_class.name}")
-                tool_instance = tool_class(tools_path, build_dir)
+                tool_instance = tool_class(tools_path, self.args.build_dir)
                 tool_instance.do_run(args, unknown_args)
 
 class Tool(abc.ABC):
@@ -94,16 +85,7 @@ class Tool(abc.ABC):
     name = ""
     def __init__(self, tools_path, build_dir=None):
         self.tools_path = tools_path
-        if build_dir:
-            self.build_dir = Path(build_dir)
-            self.build_conf = BuildConfiguration(build_dir)
-
-            # load properties
-            self.kernel = self.build_conf.get('CONFIG_KERNEL_BIN_NAME', 'zephyr')
-            self.soc_series = self.build_conf.get('CONFIG_SOC_SERIES', 'none')
-            self.in_bin = self.build_dir / 'zephyr' / f'{self.kernel}.bin'
-        else:
-            self.build_conf = None
+        self.build_dir = build_dir
 
     @classmethod
     @abc.abstractmethod
@@ -114,11 +96,26 @@ class Tool(abc.ABC):
     def do_run(self, args, unknown_args):
         """Run the tool"""
 
-    def forceable_build_conf(self, msg=""):
-        """Check if build configuration is available"""
-        if not self.build_conf:
-            log.err("Zephyr build directory is required ", msg)
-            sys.exit(1)
+    def forceable_check(self, cond, msg=""):
+        if not cond:
+            log.die(msg)
+
+    def load_build_conf(self):
+        # Find the build directory and parse .config and DT.
+        build_dir = find_build_dir(self.build_dir)
+        self.forceable_check(os.path.isdir(build_dir),
+            'no such build directory {}'.format(build_dir))
+        self.forceable_check(is_zephyr_build(build_dir),
+            "build directory {} doesn't look like a Zephyr build "
+            'directory'.format(build_dir))
+        
+        # load properties
+        self.build_conf = BuildConfiguration(build_dir)
+        self.kernel = self.build_conf.get('CONFIG_KERNEL_BIN_NAME', 'zephyr')
+        self.soc_series = self.build_conf.get('CONFIG_SOC_SERIES', 'none')
+
+        self.build_dir = Path(build_dir)
+        self.in_bin = self.build_dir / 'zephyr' / f'{self.kernel}.bin'
 
 class PrependHeader(Tool):
     name = 'prepend'
@@ -130,7 +127,7 @@ class PrependHeader(Tool):
         return parser
 
     def do_run(self, args, unknown_args):
-        self.forceable_build_conf()
+        self.load_build_conf()
 
         ini_path = Path(self.tools_path, "prepend_header/mp.ini")
         cmd_path = Path(os.getcwd())
@@ -160,7 +157,7 @@ class MD5(Tool):
 
     def do_run(self, args, unknown_args):
         # check params required
-        self.forceable_build_conf()
+        self.load_build_conf()
 
         in_bin_mp_path = self.in_bin.with_name(self.in_bin.stem + "_MP" + self.in_bin.suffix)
         cmd_path = Path(os.getcwd())
@@ -283,7 +280,7 @@ class MPCLI(Tool):
                 if not os.path.isfile(bin_file_path):
                     log.err('no such bin file {}'.format(bin_file_path))
             else:
-                self.forceable_build_conf("for downloading zephyr bin")
+                self.load_build_conf("for downloading zephyr bin")
                 download_address = hex(self.flash_address_from_build_conf(self.build_conf))
                 bin_file_path = self.build_dir / 'zephyr'/ f'{self.kernel}.bin'
 
