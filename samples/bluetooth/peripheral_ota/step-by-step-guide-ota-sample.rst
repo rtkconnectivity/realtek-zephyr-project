@@ -20,10 +20,10 @@ Pulling down P0_3 and reset to enter UART download mode. For details on UART wir
    cd realtek-zephyr-project
    # Linux/macOS
    source ../zephyr/zephyr-env.sh
-   west realtek-bee mpcli -c comX --json bin/rtl8752h/mptoolconfig.json -E
+   west realtek-bee mpcli -c comX --json bin/rtl8752h/single_bank/mptoolconfig.json -E
    # Windows
    ..\zephyr\zephyr-env.cmd
-   west realtek-bee mpcli -c comX --json bin/rtl8752h/mptoolconfig.json -E
+   west realtek-bee mpcli -c comX --json bin/rtl8752h/single_bank/mptoolconfig.json -E
 
 .. note::
    
@@ -88,7 +88,7 @@ Try OTA with `Android/iOS OTA APP <https://docs.realmcu.com/sdk/rtl8752h/common/
 Dual Bank OTA Sample
 ======================
 
-This sample is developed based on developed based on rtl8752hkf, which is equipped with a 1024KB flash.
+This sample is developed based on developed based on **rtl8752hkf**, which is equipped with a 1024KB flash.
 
 Start OTA Sample
 ----------------
@@ -102,16 +102,18 @@ Pulling down P0_3 and reset to enter UART download mode. For details on UART wir
    cd realtek-zephyr-project
    # Linux/macOS
    source ../zephyr/zephyr-env.sh
-   west realtek-bee mpcli -c comX --json bin/RTL8752H/dual_bank/mptoolconfig_bank0.json -E
+   west realtek-bee mpcli -c comX --json bin/rtl8752h/dual_bank/bank0/mptoolconfig_bank0.json -E
    # Windows
    ..\zephyr\zephyr-env.cmd
-   west realtek-bee mpcli -c comX --json bin/RTL8752H/dual_bank/mptoolconfig_bank0.json -E
+   west realtek-bee mpcli -c comX --json bin/rtl8752h/dual_bank/bank0/mptoolconfig_bank0.json -E
 
 .. note::
 
    - Replace comX with your actual serial port, e.g., com7.
 
 **2. Build and flash OTA sample.**
+
+Please ensure that you add the qualifier rtl8752hkf after rtl8752h_evb.
 
 .. code-block:: sh
 
