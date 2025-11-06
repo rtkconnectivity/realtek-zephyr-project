@@ -20,7 +20,7 @@ LOG_MODULE_DECLARE(REALTEK_DFU, CONFIG_REALTEK_DFU_LOG_LEVEL);
  *                              Macros
  */
 #define DFU_TASK_PRIORITY   1
-#define DFU_TASK_STACK_SIZE 512 * 8 /* todo: sync with bee2, may modify */
+#define DFU_TASK_STACK_SIZE 512 * 8 /* todo: sync with RTL8762C, may modify */
 
 #define MAX_NUMBER_OF_GAP_MESSAGE   0x20
 #define MAX_NUMBER_OF_IO_MESSAGE    0x20

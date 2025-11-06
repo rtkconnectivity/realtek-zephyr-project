@@ -657,7 +657,7 @@ uint32_t dfu_report_target_fw_info(uint16_t image_id, uint32_t *p_origin_fw_vers
         goto L_Return;
     }
 
-    /*bee2 default don't support re-ota*/
+    /*RTL8762C default don't support re-ota*/
     *p_offset = 0;
 
 L_Return:
