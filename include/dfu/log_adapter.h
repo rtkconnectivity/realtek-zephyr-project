@@ -4,36 +4,26 @@
 /* Log type definition */
 typedef enum
 {
-    TYPE_UPPERSTACK_RESET       = 0,    /* Bee1(deprecated) */
-    TYPE_UPPERSTACK_FORMAT      = 1,    /* Bee1 */
-    TYPE_UPPERSTACK_MESSAGE     = 2,    /* Bee1 */
-    TYPE_UPPERSTACK_BINARY      = 3,    /* Bee1 */
-    TYPE_UPPERSTACK_STRING      = 4,    /* Bee1 */
-    TYPE_UPPERSTACK_BDADDR1     = 5,    /* Bee1 */
-    TYPE_UPPERSTACK_BDADDR2     = 6,    /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA1    = 7,    /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA2    = 8,    /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA3    = 9,    /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA4    = 10,   /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA5    = 11,   /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA6    = 12,   /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA7    = 13,   /* Bee1 */
-    TYPE_UPPERSTACK_RAMDATA8    = 14,   /* Bee1 */
+    TYPE_UPPERSTACK_RESET       = 0,
+    TYPE_UPPERSTACK_FORMAT      = 1,
+    TYPE_UPPERSTACK_MESSAGE     = 2,
+    TYPE_UPPERSTACK_BINARY      = 3,
+    TYPE_UPPERSTACK_STRING      = 4,
+    TYPE_UPPERSTACK_BDADDR1     = 5,
+    TYPE_UPPERSTACK_BDADDR2     = 6,
+    TYPE_UPPERSTACK_RAMDATA1    = 7,
+    TYPE_UPPERSTACK_RAMDATA2    = 8,
+    TYPE_UPPERSTACK_RAMDATA3    = 9,
+    TYPE_UPPERSTACK_RAMDATA4    = 10,
+    TYPE_UPPERSTACK_RAMDATA5    = 11,
+    TYPE_UPPERSTACK_RAMDATA6    = 12,
+    TYPE_UPPERSTACK_RAMDATA7    = 13,
+    TYPE_UPPERSTACK_RAMDATA8    = 14,
 
-    TYPE_PLATFORM_DBG_DIRECT    = 16,   /* Bee1 */
+    TYPE_PLATFORM_DBG_DIRECT    = 16,
 
-    /* type 32~127 reserved for project id, e.g. bumblebee3, bee2 */
-    TYPE_BUMBLEBEE3             = 32,
-    TYPE_BEE2                   = 33,
-    TYPE_BEE3                   = 35,
-
-    TYPE_BEE3PRO                = 36,
     TYPE_RTL8752H               = 37,
-    TYPE_RTL87X2G                   = 38,
-
-    /* type 128~207 reserved for 3rd party definition */
-
-    /* type 220~251 reserved for Bee1 platform debug buffer */
+    TYPE_RTL87X2G               = 38,
 } T_LOG_TYPE;
 
 /* Log type current ic used */

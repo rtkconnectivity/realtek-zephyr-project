@@ -77,7 +77,6 @@ typedef enum
     IO_MSG_TYPE_AUDIO,          /**< Audio message with subtype @ref T_IO_MSG_TYPE_AUDIO*/
     IO_MSG_TYPE_RESET_WDG_TIMER, /**< reset watch dog timer*/
     IO_MSG_TYPE_RESET_AON_WDG_TIMER, /**< reset aon watch dog timer*/
-    IO_MSG_TYPE_BBPRO_HCI,  /**< bbpro hci message*/
     IO_MSG_TYPE_RTC,             /**< subtype to be defined */
     IO_MSG_TYPE_I2C,             /**< subtype to be defined */
     IO_MSG_TYPE_WIFI_UART,       /**< wifi uart message */
@@ -180,14 +179,6 @@ typedef enum
     IO_MSG_ANCS_DISCOVERY,
 } T_IO_MSG_WRISTBAND;
 
-/**  @brief IO subtype definitions for @ref IO_MSG_TYPE_BBPRO_HCI type */
-typedef enum
-{
-    IO_MSG_BBPRO_HCI_RX_PKT         = 1, /**< BBPRO HCI RX data event */
-    IO_MSG_BBPRO_HCI_RETRANS        = 2, /**< BBPRO HCI retransmission event*/
-    IO_MSG_BBPRO_HCI_RETRANS_FAIL   = 3, /**< BBPRO HCI retransmission failed event*/
-    IO_MSG_BBPRO_HCI_TIMEOUT        = 4, /**< BBPRO HCI timeout event */
-} T_IO_MSG_BBPRO_HCI;
 
 /**  @brief IO subtype definitions for @ref IO_MSG_TYPE_UART type */
 typedef enum
