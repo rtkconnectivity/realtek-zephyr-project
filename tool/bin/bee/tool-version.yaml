@@ -1,0 +1,42 @@
+# Tool Version Information
+tools:
+  md5:
+    windows:
+      filename: md5.exe
+      version: 1.0.4
+    linux:
+      filename: MD5
+      version: 1.0.4
+    macos:
+      filename: MD5.mac
+      version: 1.0.5
+  
+  packcli:
+    windows:
+      filename: PackCli.exe
+      version: 2.0.0.2
+    macos:
+      filename: PackCli.mac
+      version: 2.0.0.2
+  
+  mpcli:
+    windows:
+      filename: mpcli.exe
+      version: 1.0.4.28
+    linux:
+      filename: mpcli
+      version: 1.0.4.28
+    macos:
+      filename: mpcli.mac
+      version: 1.0.4.25
+  
+  prepend_header:
+    windows:
+      filename: prepend_header.exe
+      version: 1.0.20
+    linux:
+      filename: prepend_header
+      version: 1.0.18
+    macos:
+      filename: prepend_header.mac
+      version: 1.0.24
