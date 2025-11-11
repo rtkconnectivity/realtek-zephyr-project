@@ -36,7 +36,8 @@ See the [Realtek Zephyr SDK Wiki](https://github.com/rtkconnectivity/realtek-zep
 #### Boards
 
 - rtl87x2g_evb
-- rtl8752h_evb
+- rtl8752h_evb/rtl8752htv
+- rtl8752h_evb/rtl8752hkf
 - rtl8752h_dongle
 
 ### 🚀 Getting Started
@@ -59,4 +60,5 @@ Please refer to [Versioning](https://github.com/rtkconnectivity/realtek-zephyr-p
   submit a subject to [RealMCU's DevZone](https://www.realmcu.com/community/cimd).
 
 Additionally, we welcome any feedback that you can give to improve the
+
 documentation!
