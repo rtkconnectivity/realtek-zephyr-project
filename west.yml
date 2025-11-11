@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: realtek-main-v3.7
+      revision: v3.7-rtk-00.01.01
       import:
         name-allowlist:
           - cmsis
@@ -21,3 +21,13 @@ manifest:
           - tinycrypt
           - openthread
           - mbedtls
+
+    #
+    # Realtek based overrides of Zephyr modules and additional
+    # added modules
+    #
+    - name: hal_realtek
+      revision: a0a394a583ab8f0c37d56aefa65da834fe411878
+      path: modules/hal/realtek
+      groups:
+        - hal
