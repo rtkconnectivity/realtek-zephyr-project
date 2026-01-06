@@ -1,0 +1,110 @@
+#include <zephyr/dt-bindings/gpio/realtek-rtl87x2g-gpio.h>
+
+/ {
+    chosen {
+        voice,console = &uart0;
+        kscan = &kscan;
+    };
+};
+
+&kscan {
+    pinctrl-0 = <&kscan_default>;
+    pinctrl-1 = <&kscan_sleep>;
+    pinctrl-names = "default", "sleep";
+    row-size = <2>;
+    col-size = <2>;
+    debounce-time-us = <10000>;
+    scan-time-us = <50000>;
+    release-time-us = <10000>;
+    scan-debounce-cnt = <1>;
+    status = "okay";
+};
+
+&uart2 {
+	pinctrl-0 = <&uart2_default>;
+	pinctrl-1 = <&uart2_sleep>;
+	pinctrl-names = "default", "sleep";
+	status = "okay";
+	current-speed = <2000000>;
+	parity = "none";
+	stop-bits = "1";
+	data-bits = <8>;
+};
+
+&i2s0 {
+	dmas = <&dma0 0 41 0x26a1>, <&dma0 1 42 0x648a>;
+	dma-names = "tx", "rx";
+	pinctrl-0 = <&i2s0_default>;
+	pinctrl-names = "default";
+
+	status = "okay";
+	codec: codec@0 {
+		compatible = "realtek,rtl87x2g-codec";
+		reg = <0>;
+		channel-sequence = "l_r";
+		mic-bias = "1_8";
+		mic-bst-gain = "30dB";
+		mic-bst-mode = "differential";
+		mic-type = "amic";
+		dmic-data-latch = "rising_latch";
+		ad-gain = <0x2f>;
+		boost-gain = "0dB";
+		pinctrl-0 = <&codec_default>;
+		pinctrl-names = "default";
+        status = "okay";
+	};
+};
+
+&dma0 {
+ 	status = "okay";
+};
+
+&pinctrl {
+    kscan_default: kscan_default {
+        group1 {
+            psels =
+            <RTL87X2G_PSEL(KEY_COL_0, P4_3, DIR_OUT, DRV_LOW, PULL_NONE)>,
+            <RTL87X2G_PSEL(KEY_COL_1, P4_2, DIR_OUT, DRV_LOW, PULL_NONE)>;
+        };
+        group2 {
+            psels =
+            <RTL87X2G_PSEL(KEY_ROW_0, P0_0, DIR_IN, DRV_LOW, PULL_UP)>,
+            <RTL87X2G_PSEL(KEY_ROW_1, P0_1, DIR_IN, DRV_LOW, PULL_UP)>;
+            bias-pull-strong;
+        };
+    };
+    kscan_sleep: kscan_sleep {
+        group1 {
+            psels =
+            <RTL87X2G_PSEL(SW_MODE, P4_3, DIR_OUT, DRV_LOW, PULL_DOWN)>,
+            <RTL87X2G_PSEL(SW_MODE, P4_2, DIR_OUT, DRV_LOW, PULL_DOWN)>;
+        };
+        group2 {
+            psels =
+            <RTL87X2G_PSEL(SW_MODE, P0_0, DIR_IN, DRV_HIGH, PULL_UP)>,
+            <RTL87X2G_PSEL(SW_MODE, P0_1, DIR_IN, DRV_HIGH, PULL_UP)>;
+            bias-pull-strong;
+            wakeup-low;
+        };
+    };
+    i2s0_default: i2s0_default {
+        group1 {
+            psels = <RTL87X2G_PSEL(BCLK_SPORT0, P4_0, DIR_OUT, DRV_LOW, PULL_NONE)>,
+             <RTL87X2G_PSEL(SDI_CODEC_SLAVE, P4_2, DIR_OUT, DRV_LOW, PULL_NONE)>,
+             <RTL87X2G_PSEL(SDO_CODEC_SLAVE, P4_3, DIR_OUT, DRV_LOW, PULL_NONE)>;
+        };
+    };
+    codec_default: codec_default {
+        group1 {
+            psels = <RTL87X2G_PSEL(PWR_OFF, MICBIAS, DIR_OUT, DRV_HIGH, PULL_NONE)>,
+             <RTL87X2G_PSEL(PWR_OFF, P2_6, DIR_OUT, DRV_HIGH, PULL_NONE)>,
+             <RTL87X2G_PSEL(PWR_OFF, P2_7, DIR_OUT, DRV_HIGH, PULL_NONE)>;
+        };
+    };
+    uart2_sleep: uart2_sleep {
+		group1 {
+			psels = <RTL87X2G_PSEL(SW_MODE, P3_0, DIR_OUT, DRV_HIGH, PULL_UP)>,
+			<RTL87X2G_PSEL(SW_MODE, P3_1, DIR_IN, DRV_HIGH, PULL_UP)>;
+		};
+	};
+};
