@@ -13,11 +13,10 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: realtek-main-v3.7
+      revision: zephyr-main
       import:
         name-allowlist:
           - cmsis
+          - cmsis_6
           - hal_realtek
           - tinycrypt
-          - openthread
-          - mbedtls
