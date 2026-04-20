@@ -13,7 +13,7 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: zephyr-main
+      revision: zephyr-main-test
       import:
         name-allowlist:
           - cmsis
