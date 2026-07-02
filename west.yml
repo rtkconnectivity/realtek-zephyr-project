@@ -6,6 +6,8 @@ manifest:
   remotes:
     - name: rtkconnectivity
       url-base: https://github.com/rtkconnectivity
+    - name: zephyr
+      url-base: https://github.com/zephyrproject-rtos
 
   defaults:
     remote: rtkconnectivity
@@ -13,11 +15,20 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: realtek-main-v3.7
+      revision: realtek-main-v4.4
       import:
         name-allowlist:
           - cmsis
+          - cmsis_6
           - hal_realtek
-          - tinycrypt
-          - openthread
           - mbedtls
+          - tf-psa-crypto
+          - segger
+          - cmsis-dsp
+          - cmsis-nn
+          - mldsa-native
+          - littlefs
+          - fatfs
+          - mcuboot
+          - zcbor
+          - mipi-sys-t
