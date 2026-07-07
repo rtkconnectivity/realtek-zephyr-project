@@ -2,18 +2,20 @@ manifest:
   self:
     path: realtek-zephyr-project
     west-commands: tool/west-commands.yml
+  
+  defaults:
+    remote: upstream
 
   remotes:
     - name: rtkconnectivity
       url-base: https://github.com/rtkconnectivity
-
-  defaults:
-    remote: rtkconnectivity
+    - name: upstream
+      url-base: https://github.com/zephyrproject-rtos
 
   projects:
     - name: zephyr
-      remote: rtkconnectivity
-      revision: zephyr-main-test
+      remote: upstream
+      revision: main
       import:
         name-allowlist:
           - cmsis
