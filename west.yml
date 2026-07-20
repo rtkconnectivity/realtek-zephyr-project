@@ -21,3 +21,13 @@ manifest:
           - tinycrypt
           - openthread
           - mbedtls
+
+    #
+    # Realtek based overrides of hal_realtek modules
+    #
+    - name: hal_realtek
+      remote: rtkconnectivity
+      revision: hal_realtek_v3.5_v3.7
+      path: modules/hal/realtek
+      groups:
+        - hal
