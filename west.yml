@@ -32,3 +32,13 @@ manifest:
           - mcuboot
           - zcbor
           - mipi-sys-t
+
+    #
+    # Realtek based overrides of hal_realtek modules
+    #
+    - name: hal_realtek
+      remote: rtkconnectivity
+      revision: hal_realtek_v4.4
+      path: modules/hal/realtek
+      groups:
+        - hal
