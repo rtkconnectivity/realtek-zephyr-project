@@ -17,7 +17,7 @@
  * VOICE Module config
  */
 #define SUPPORT_VOICE_FEATURE               1  /* set 1 to support voice feature */
-#define FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA 0 /* set 1 to support uart dump voice feature */
+#define FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA 1 /* set 1 to support uart dump voice feature */
 
 #if SUPPORT_VOICE_FEATURE
 
@@ -28,11 +28,7 @@
 #define SUPPORT_SW_EQ                       0  /* set 1 to support software equalizer */
 
 #if SUPPORT_UART_DUMP_FEATURE
-#if (RCU_HD_PLATFORM_SEL == H_DEMO_RCU)
-#define VOICE_UART_TEST_TX          P0_1
-#else
-#define VOICE_UART_TEST_TX          P3_4
-#endif
+#define VOICE_UART_TEST_TX          P3_1
 #endif
 
 /* mic type definitions */

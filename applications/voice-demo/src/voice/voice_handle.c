@@ -26,12 +26,15 @@
 #elif (VOICE_ENC_TYPE == SW_IMA_ADPCM_ENC)
 #include "voice/ima_adpcm_enc.h"
 #endif
+#if IS_ENABLED(CONFIG_VOICE_PPT_MASTER)
+#include <ppt/voice_ppt_master.h>
+#endif
 
 LOG_MODULE_DECLARE(app, CONFIG_APP_LOG_LEVEL);
 
 static struct k_thread voice_rx_data;
 K_THREAD_STACK_DEFINE(voice_rx_stack, 768); /* if stack size < 768, hardfault will occur */
-struct k_work_q voice_work_q;
+struct k_work voice_work_q;
 
 /*============================================================================*
  *                              Local Variables
@@ -211,6 +214,22 @@ bool voice_handle_notify_voice_data(void)
                 LOG_DBG("[voice_handle_out_queue] p_notify_buffer allocate failed!");
             }
 #else
+#if IS_ENABLED(CONFIG_VOICE_PPT_MASTER)
+            uint8_t notify_data_len = p_voice_queue->item_size;
+            uint8_t *p_notify_buffer = k_malloc(notify_data_len);
+
+            if ((p_notify_buffer != NULL) &&
+                (true == (loop_queue_copy_buf(p_voice_queue, p_notify_buffer, p_voice_queue->item_size))))
+            {
+                app_ppt_send_voice_data(p_notify_buffer);
+                result = loop_queue_read_buf(p_voice_queue, p_notify_buffer, p_voice_queue->item_size);
+                k_free(p_notify_buffer);
+            }
+            else
+            {
+                result = false;
+            }
+#elif IS_ENABLED(CONFIG_BT)
             uint8_t notify_data_len = p_voice_queue->item_size;
             uint8_t *p_notify_buffer = k_malloc(notify_data_len);
 
@@ -231,7 +250,8 @@ bool voice_handle_notify_voice_data(void)
             {
                 result = false;
             }
-#endif
+#endif /* CONFIG_VOICE_PPT_MASTER */
+#endif /* VOICE_FLOW_SEL */
         }
     }
 
@@ -324,8 +344,6 @@ void voice_handle_encode_raw_data(uint8_t *p_input_data, int32_t input_size,
     LOG_DBG("[voice_handle_encode_raw_data] *p_output_size = %d", *p_output_size);
 #endif
 }
-
-K_WORK_DEFINE(voice_rx_work, voice_handle_rx_data_callback);
 
 /******************************************************************
  * @brief   Application code for voice data process.
@@ -425,15 +443,17 @@ static void voice_rx_thread(void *p1, void *p2, void *p3)
             k_work_submit(&voice_work_q);
         }
 #if FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA
-        for (uint32_t i = 0; i < rx_size; i += 8) {
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 1]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 2]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 3]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 4]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 5]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 6]);
-            uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 7]);
+        if (dev_uart != NULL) {
+            for (uint32_t i = 0; i < rx_size; i += 8) {
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 1]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 2]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 3]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 4]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 5]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 6]);
+                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 7]);
+            }
         }
 #endif
     }
@@ -544,7 +564,6 @@ bool voice_handle_start_mic(void)
     }
 
     LOG_DBG("[voice_handle_start_mic] start recording!");
-    static const struct k_work_queue_config queue_config = {.name = "voice data receive work"};
     k_work_init(&voice_work_q, voice_handle_rx_data_callback);
 
     voice_handle_init_data();

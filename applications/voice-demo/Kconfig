@@ -7,10 +7,28 @@ config APP_LOG_LEVEL
 
 config BT_DEVICE_NAME
 	string "device name"
-	default "Voice demo"
+	default "Zephyr Voice demo"
 
 module = VOICE_DEMO
 module-str = app
 source "subsys/logging/Kconfig.template.log_config"
+
+if REALTEK_PPT
+
+choice VOICE_PPT_ROLE
+	prompt "2.4G PPT role"
+	default VOICE_PPT_MASTER
+
+config VOICE_PPT_MASTER
+	bool "Master (voice device, sends encoded audio)"
+	select REALTEK_USING_PPT_SYNC_MASTER
+
+config VOICE_PPT_SLAVE
+	bool "Slave (dongle, receives and decodes audio)"
+	select REALTEK_USING_PPT_SYNC_SLAVE
+
+endchoice
+
+endif # REALTEK_PPT
 
 source "Kconfig.zephyr"

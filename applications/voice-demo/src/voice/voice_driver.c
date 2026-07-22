@@ -15,7 +15,7 @@
 #include "trace.h"
 #include "rtl_pinmux.h"
 
-LOG_MODULE_DECLARE(voice, CONFIG_VOICE_DEMO_LOG_LEVEL);
+LOG_MODULE_DECLARE(app, CONFIG_APP_LOG_LEVEL);
 
 const struct device *dev_uart = DEVICE_DT_GET_OR_NULL(DT_CHOSEN(voice_console));
 const struct device *dev_i2s = DEVICE_DT_GET_OR_NULL(DT_NODELABEL(i2s0));
@@ -27,7 +27,7 @@ T_VOICE_DRIVER_GLOBAL_DATA voice_driver_global_data;
 
 #define BLOCK_SIZE    480
 #define NUM_RX_BLOCKS 2
-#define RCU_MAX_VOICE_TIMEOUT_SEC	3
+#define MAX_VOICE_TIMEOUT_SEC	2
 
 K_MEM_SLAB_DEFINE(rx_mem_slab, BLOCK_SIZE, NUM_RX_BLOCKS, 32);
 // K_MEM_SLAB_DEFINE(tx_mem_slab, BLOCK_SIZE, NUM_RX_BLOCKS, 32);
@@ -98,12 +98,12 @@ static void voice_driver_init_codec_i2s(void)
 static void voice_driver_start(void)
 {
 	LOG_DBG("voice_driver_start");
+	k_timer_start(&voice_timer, K_SECONDS(MAX_VOICE_TIMEOUT_SEC), K_NO_WAIT);
 	/* enable i2s + config dma + enable dma */
 	int ret = i2s_trigger(dev_i2s, I2S_DIR_RX, I2S_TRIGGER_START);
 	if (ret) {
 		LOG_DBG("[%s] ret%d line%d\n", __func__, ret, __LINE__);
 	}
-	k_timer_start(&voice_timer, K_SECONDS(RCU_MAX_VOICE_TIMEOUT_SEC), K_NO_WAIT);
 }
 
 void voice_driver_init(void)
