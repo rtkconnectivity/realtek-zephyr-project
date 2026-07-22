@@ -6,6 +6,4 @@
 
 #pragma once
 
-#include <zephyr/device.h>
-
-int kscan_init(const struct device *dev);
+int voice_test_button_init(void);
