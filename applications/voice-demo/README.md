@@ -1,5 +1,7 @@
 # Voice Demo — RTL8762GN
 
+> **语言**: [English](README.en.md) | 中文
+
 基于 Zephyr RTOS 的语音采集演示工程，运行于 Realtek RTL8762GN EVB。  
 支持三种数据输出模式，可根据实际需求灵活选择。
 
