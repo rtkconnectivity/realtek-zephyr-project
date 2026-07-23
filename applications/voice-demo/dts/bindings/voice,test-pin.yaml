@@ -1,0 +1,21 @@
+description: Voice test GPIO pin node
+
+compatible: "voice,test-pin"
+
+properties:
+  test-pin1:
+    type: phandle-array
+    specifier-space: gpio
+    required: true
+  test-pin2:
+    type: phandle-array
+    specifier-space: gpio
+    required: true
+  test-pin3:
+    type: phandle-array
+    specifier-space: gpio
+    required: true
+  test-pin4:
+    type: phandle-array
+    specifier-space: gpio
+    required: true

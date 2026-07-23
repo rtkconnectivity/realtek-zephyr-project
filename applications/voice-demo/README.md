@@ -1,5 +1,7 @@
 # Voice Demo — RTL8762GN
 
+> **语言**: [English](README.en.md) | 中文
+
 基于 Zephyr RTOS 的语音采集演示工程，运行于 Realtek RTL8762GN EVB。  
 支持三种数据输出模式，可根据实际需求灵活选择。
 
@@ -80,10 +82,7 @@ voice-demo/
 │   └── ppt/
 │       ├── voice_ppt_master.c  # 2.4G Master：ppt_sync 配对/连接，发送编码帧
 │       ├── voice_ppt_slave.c   # 2.4G Slave：接收 mSBC 帧，解码→USB Audio
-│       └── usb_audio.c         # USB UAC 麦克风：上采样 16kHz→48kHz，ring buf→UAC
-└── tools/
-    ├── pkg_app/            # 预编译固件（ble 版本、master、dongle）
-    └── md5/                # 固件完整性校验工具
+└──     └── usb_audio.c         # USB UAC 麦克风：上采样 16kHz→48kHz，ring buf→UAC
 ```
 
 ### 数据流简图
