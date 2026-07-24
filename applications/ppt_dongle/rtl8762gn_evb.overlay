@@ -1,0 +1,23 @@
+/ {
+	aliases {
+        watchdog = &aonwdt;
+    };
+};
+
+&timer8 {
+    status = "okay";
+};
+
+&usb {
+    status = "okay";
+};
+
+&corewdt {
+    status = "disabled";
+    initial-timeout-ms = <5000>;
+};
+
+&aonwdt {
+    status = "okay";
+    initial-timeout-ms = <5000>;
+};
