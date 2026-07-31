@@ -391,6 +391,13 @@ void voice_handle_rx_data_callback(struct k_work *item)
             LOG_DBG("[voice_handle_rx_data_callback] output size %d, item_size %d",output_size, p_voice_queue->item_size);
 			if (output_size == p_voice_queue->item_size)
 			{
+#if FEATURE_SUPPORT_UART_DUMP_VOICE_ENCODE_DATA
+				if (dev_uart != NULL) {
+					for (int32_t i = 0; i < output_size; i++) {
+						uart_poll_out(dev_uart, encode_output_buffer[i]);
+					}
+				}
+#endif
 				/* set is_overflow_data_abandoned to false, to drop oldest data if queue is full */
 				loop_queue_write_buf(p_voice_queue, encode_output_buffer, p_voice_queue->item_size, false);
 				if (voice_global_data.is_allowed_to_notify_voice_data == true)

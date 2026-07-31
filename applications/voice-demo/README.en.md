@@ -48,7 +48,7 @@ Supports three data output modes that can be selected based on your requirements
 
 ```
 voice-demo/
-├── CMakeLists.txt          # Build entry; PPT sources conditionally compiled via CONFIG_REALTEK_PPT
+├── CMakeLists.txt          # Build entry; PPT sources compiled per role (Master/Slave)
 ├── Kconfig                 # App-level Kconfig: log level, BT device name, PPT role
 ├── prj.conf                # Default config (BLE + audio; PPT/USB commented out)
 ├── rtl8762gn_evb.overlay   # Board-level device tree (I2S, Codec, UART, USB audio UAC)
@@ -80,9 +80,9 @@ voice-demo/
 │   │   ├── button.c        # GPIO button driver
 │   │   └── button_handle.c # Button events → voice_handle_mic_key_pressed/released
 │   └── ppt/
-│       ├── voice_ppt_master.c  # 2.4G Master: ppt_sync pairing/connect, send encoded frames
-│       ├── voice_ppt_slave.c   # 2.4G Slave: receive mSBC frames, decode → USB Audio
-└──     └── usb_audio.c         # USB UAC mic: upsample 16kHz→48kHz, ring buf → UAC
+│       ├── voice_ppt_master.c  # [Master only] ppt_sync pairing/connect, send encoded frames
+│       ├── voice_ppt_slave.c   # [Slave only]  receive mSBC frames, decode → app_usb_audio_send
+└──     └── usb_audio.c         # [Slave only]  USB UAC mic: ring buf pre-fill gate → UAC IN
 ```
 ### Data Flow Diagram
 

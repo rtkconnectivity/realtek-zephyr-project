@@ -17,7 +17,10 @@
  * VOICE Module config
  */
 #define SUPPORT_VOICE_FEATURE               1  /* set 1 to support voice feature */
-#define FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA 1 /* set 1 to support uart dump voice feature */
+#define FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA 0 /* set 1 to support uart dump voice feature */
+#define FEATURE_SUPPORT_UART_DUMP_VOICE_ENCODE_DATA 0 /* set 1 to support uart dump voice encode data */
+#define FEATURE_SUPPORT_UART_DUMP_VOICE_DECODE_DATA 0 /* set 1 to dump slave decoded PCM via UART */
+#define FEATURE_SUPPORT_UART_DUMP_UAC_SEND_DATA     0 /* set 1 to dump UAC ISO IN frames via UART */
 
 #if SUPPORT_VOICE_FEATURE
 
@@ -82,7 +85,7 @@
 
 /* voice encode config */
 #if ((VOICE_FLOW_SEL == IFLYTEK_VOICE_FLOW) || (VOICE_FLOW_SEL == HIDS_GOOGLE_VOICE_FLOW))
-#define VOICE_ENC_TYPE              SW_MSBC_ENC
+#define VOICE_ENC_TYPE              SW_SBC_ENC//SW_MSBC_ENC
 
 #elif (VOICE_FLOW_SEL == ATV_GOOGLE_VOICE_FLOW)
 /* ATV_GOOGLE_VOICE_FLOW must use SW_IMA_ADPCM_ENC */

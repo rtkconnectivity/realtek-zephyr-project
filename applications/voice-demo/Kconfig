@@ -31,4 +31,21 @@ endchoice
 
 endif # REALTEK_PPT
 
+choice APP_UAC_SAMPLE_RATE
+	prompt "UAC microphone sample rate"
+	default APP_UAC_SAMPLE_RATE_16K
+
+config APP_UAC_SAMPLE_RATE_16K
+	bool "16 kHz"
+
+config APP_UAC_SAMPLE_RATE_48K
+	bool "48 kHz"
+
+endchoice
+
+config APP_UAC_SAMPLE_RATE
+	int
+	default 16000 if APP_UAC_SAMPLE_RATE_16K
+	default 48000 if APP_UAC_SAMPLE_RATE_48K
+
 source "Kconfig.zephyr"

@@ -48,7 +48,7 @@
 
 ```
 voice-demo/
-├── CMakeLists.txt          # 构建入口；PPT 源码由 CONFIG_REALTEK_PPT 条件编译
+├── CMakeLists.txt          # 构建入口；PPT 源码按角色条件编译（Master/Slave）
 ├── Kconfig                 # 应用级 Kconfig：日志级别、BT 设备名、PPT 角色选择
 ├── prj.conf                # 默认配置（BLE + 音频；PPT/USB 被注释）
 ├── rtl8762gn_evb.overlay   # 板级硬件描述（I2S、Codec、UART、USB 音频 UAC）
@@ -80,9 +80,9 @@ voice-demo/
 │   │   ├── button.c        # GPIO 按键驱动
 │   │   └── button_handle.c # 按键事件 → voice_handle_mic_key_pressed/released
 │   └── ppt/
-│       ├── voice_ppt_master.c  # 2.4G Master：ppt_sync 配对/连接，发送编码帧
-│       ├── voice_ppt_slave.c   # 2.4G Slave：接收 mSBC 帧，解码→USB Audio
-└──     └── usb_audio.c         # USB UAC 麦克风：上采样 16kHz→48kHz，ring buf→UAC
+│       ├── voice_ppt_master.c  # [仅 Master] ppt_sync 配对/连接，发送编码帧
+│       ├── voice_ppt_slave.c   # [仅 Slave]  接收 mSBC 帧，解码 → app_usb_audio_send
+└──     └── usb_audio.c         # [仅 Slave]  USB UAC 麦克风：ring buf 预填充 → UAC IN
 ```
 
 ### 数据流简图

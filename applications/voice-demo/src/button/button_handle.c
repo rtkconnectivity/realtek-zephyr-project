@@ -14,6 +14,7 @@
 #include "ble/hog.h"
 #include "ble/ble.h"
 #include "voice/voice_driver.h"
+#include "ppt/voice_ppt_master.h"
 
 LOG_MODULE_DECLARE(app, CONFIG_APP_LOG_LEVEL);
 
@@ -68,6 +69,7 @@ void key_handle_one_key_scenario(void)
         break;
     }
 #else
+    voice_ppt_master_try_reconnect();
     voice_handle_mic_key_pressed();
 #endif
 }
