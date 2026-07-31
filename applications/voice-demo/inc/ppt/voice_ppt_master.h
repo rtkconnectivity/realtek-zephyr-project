@@ -37,10 +37,19 @@ void voice_ppt_master_init(void);
 void voice_ppt_master_enable(void);
 
 /**
- * @brief Send one mSBC frame pair (120 bytes) over 2.4G as two 62-byte packets.
+ * @brief Send one encoded frame pair over 2.4G as two PPT packets.
  *
- * @param msbc_frame_pair  Pointer to 120-byte buffer:
- *                         bytes[0..59]   = first mSBC frame
- *                         bytes[60..119] = second mSBC frame
+ * SW_MSBC_ENC: 120-byte input → two 62-byte packets
+ *   bytes[0..59]   = first mSBC frame, bytes[60..119] = second mSBC frame
+ * SW_SBC_ENC:  72-byte input → two 38-byte packets
+ *   bytes[0..35]   = first SBC frame,  bytes[36..71]  = second SBC frame
+ *
+ * @param frame_pair  Pointer to encoded frame pair buffer (size = VOICE_REPORT_FRAME_SIZE)
  */
-void app_ppt_send_voice_data(const uint8_t *msbc_frame_pair);
+void app_ppt_send_voice_data(const uint8_t *frame_pair);
+
+/**
+ * @brief Reconnect to bonded slave if currently disconnected (call on key press).
+ *        No-op if not bonded or already connected/pairing.
+ */
+void voice_ppt_master_try_reconnect(void);

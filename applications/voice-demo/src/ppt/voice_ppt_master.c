@@ -8,6 +8,7 @@
 #include <zephyr/logging/log.h>
 #include <string.h>
 
+#include <config.h>
 #include <ppt_sync.h>
 #include <ppt/ppt_protocol.h>
 #include <ppt/voice_ppt_master.h>
@@ -74,12 +75,13 @@ void voice_ppt_master_init(void)
 	sync_event_cb_reg(ppt_master_event_cb);
 
 	sync_pair_rssi_set(PPT_PAIR_RSSI);
-
+	sync_time_set(0, 1000);
+	sync_time_set(1, 1000);
     /* set 2.4g connection heart beat interval */
     sync_master_set_hb_param(2, 250000, 0);
 
     /*Different message types have different queue size*/
-    uint8_t msg_quota[SYNC_MSG_TYPE_NUM] = {0, 3, 3, 3};
+    uint8_t msg_quota[SYNC_MSG_TYPE_NUM] = {40, 3, 3, 3};
     sync_msg_set_quota(msg_quota);
 	sync_log_set(0, true);
 	LOG_DBG("ppt master init done");
@@ -102,26 +104,54 @@ void voice_ppt_master_enable(void)
 		voice_ppt_master_data.state = VOICE_PPT_MASTER_STATE_PAIRING;
 	}
 }
-
-void app_ppt_send_voice_data(const uint8_t *msbc_frame_pair)
+void voice_ppt_master_try_reconnect(void)
 {
-	// if (voice_ppt_master_data.state != VOICE_PPT_MASTER_STATE_CONNECTED) {
-	// 	return;
-	// }
+	if (!voice_ppt_master_data.is_bonded ||
+	    voice_ppt_master_data.state != VOICE_PPT_MASTER_STATE_DISCONNECTED) {
+		return;
+	}
+
+	sync_bond_info_t bond_info;
+
+	if (sync_nvm_get_bond_info(&bond_info) == SYNC_ERR_CODE_SUCCESS) {
+		LOG_DBG("ppt master: key press reconnect");
+		sync_connect(&bond_info);
+	}
+}
+
+void app_ppt_send_voice_data(const uint8_t *frame_pair)
+{
+	if (voice_ppt_master_data.state != VOICE_PPT_MASTER_STATE_CONNECTED) {
+		return;
+	}
 
 	uint8_t pkt[VOICE_PPT_PACKET_SIZE];
 
-	/* Send first mSBC frame (bytes 0..59) */
 	pkt[VOICE_PPT_OFFSET_OPCODE]    = SYNC_OPCODE_VOICE;
 	pkt[VOICE_PPT_OFFSET_FRAME_IDX] = 0;
-	memcpy(&pkt[VOICE_PPT_OFFSET_MSBC], msbc_frame_pair, VOICE_MSBC_FRAME_SIZE);
+
+#if (VOICE_ENC_TYPE == SW_MSBC_ENC)
+	/* Send first mSBC frame (bytes 0..59) */
+	memcpy(&pkt[VOICE_PPT_OFFSET_MSBC], frame_pair, VOICE_MSBC_FRAME_SIZE);
 	sync_msg_send(SYNC_MSG_TYPE_ONESHOT, pkt, VOICE_PPT_PACKET_SIZE, ppt_master_send_cb);
 	LOG_HEXDUMP_DBG(pkt, VOICE_PPT_PACKET_SIZE, "ppt send voice data pk1");
 
 	/* Send second mSBC frame (bytes 60..119) */
 	pkt[VOICE_PPT_OFFSET_FRAME_IDX] = 1;
-	memcpy(&pkt[VOICE_PPT_OFFSET_MSBC], msbc_frame_pair + VOICE_MSBC_FRAME_SIZE,
-	       VOICE_MSBC_FRAME_SIZE);
+	memcpy(&pkt[VOICE_PPT_OFFSET_MSBC], frame_pair + VOICE_MSBC_FRAME_SIZE, VOICE_MSBC_FRAME_SIZE);
 	sync_msg_send(SYNC_MSG_TYPE_ONESHOT, pkt, VOICE_PPT_PACKET_SIZE, ppt_master_send_cb);
 	LOG_HEXDUMP_DBG(pkt, VOICE_PPT_PACKET_SIZE, "ppt send voice data pk2");
+
+#elif (VOICE_ENC_TYPE == SW_SBC_ENC)
+	/* Send first SBC frame (bytes 0..35) */
+	memcpy(&pkt[VOICE_PPT_OFFSET_SBC], frame_pair, VOICE_SBC_FRAME_SIZE);
+	sync_msg_send(SYNC_MSG_TYPE_ONESHOT, pkt, VOICE_PPT_PACKET_SIZE, ppt_master_send_cb);
+	LOG_HEXDUMP_DBG(pkt, VOICE_PPT_PACKET_SIZE, "ppt send voice data pk1");
+
+	/* Send second SBC frame (bytes 36..71) */
+	pkt[VOICE_PPT_OFFSET_FRAME_IDX] = 1;
+	memcpy(&pkt[VOICE_PPT_OFFSET_SBC], frame_pair + VOICE_SBC_FRAME_SIZE, VOICE_SBC_FRAME_SIZE);
+	sync_msg_send(SYNC_MSG_TYPE_ONESHOT, pkt, VOICE_PPT_PACKET_SIZE, ppt_master_send_cb);
+	LOG_HEXDUMP_DBG(pkt, VOICE_PPT_PACKET_SIZE, "ppt send voice data pk2");
+#endif /* VOICE_ENC_TYPE */
 }

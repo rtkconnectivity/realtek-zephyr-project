@@ -13,17 +13,24 @@
 
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/drivers/uart.h>
 #include <string.h>
 
+#include <config.h>
 #include <ppt_sync.h>
-#include <sbc.h>
+#include <voice/sbc.h>
 #include <ppt/ppt_protocol.h>
 #include <ppt/voice_ppt_slave.h>
+#include "rtl_pinmux.h"
 
 LOG_MODULE_DECLARE(app, CONFIG_APP_LOG_LEVEL);
 
 T_VOICE_PPT_SLAVE_DATA voice_ppt_slave_data;
 uint16_t slave_pair_time_cnt = 0;
+
+#if FEATURE_SUPPORT_UART_DUMP_VOICE_DECODE_DATA
+static const struct device *dump_uart;
+#endif
 
 static void ppt_slave_receive_cb(uint8_t *data, uint16_t len, sync_receive_info_t *info)
 {
@@ -36,24 +43,52 @@ static void ppt_slave_receive_cb(uint8_t *data, uint16_t len, sync_receive_info_
 		return;
 	}
 
+	LOG_DBG("ppt_slave_receive_cb: voice data received!");
+
+	int ret;
+
+#if (VOICE_ENC_TYPE == SW_MSBC_ENC)
 	/*
-	 * data[VOICE_PPT_OFFSET_MSBC]  = start of 60-byte mSBC frame
 	 * mSBC frame layout: [0x01, seq, sbc_data[57], 0x00]
-	 * Raw SBC data starts at offset VOICE_MSBC_SBC_OFFSET (2) within the frame.
+	 * Raw SBC data starts at VOICE_MSBC_SBC_OFFSET (2) within the frame.
 	 */
 	const uint8_t *msbc_frame = &data[VOICE_PPT_OFFSET_MSBC];
-	uint8_t pcm_buf[240];
-	int pcm_size = 0;
+	uint8_t pcm_buf[240];  /* mSBC: 240 bytes PCM per frame at 16kHz */
+	int pcm_size = (int)sizeof(pcm_buf);
 
-	int ret = sbc_decode((unsigned char *)(msbc_frame + VOICE_MSBC_SBC_OFFSET),
-			     VOICE_MSBC_SBC_SIZE,
-			     pcm_buf, &pcm_size);
-	if (ret != 0) {
+	ret = sbc_decode((unsigned char *)(msbc_frame + VOICE_MSBC_SBC_OFFSET),
+			 VOICE_MSBC_SBC_SIZE, pcm_buf, &pcm_size);
+
+#elif (VOICE_ENC_TYPE == SW_SBC_ENC)
+	/* Raw SBC bitstream, no framing header */
+	const uint8_t *sbc_frame = &data[VOICE_PPT_OFFSET_SBC];
+	uint8_t pcm_buf[256];  /* SBC bitpool=14: 16 blocks × 8 subbands × 2B = 256 bytes */
+	int pcm_size = (int)sizeof(pcm_buf);
+
+	ret = sbc_decode((unsigned char *)sbc_frame, VOICE_SBC_FRAME_SIZE,
+			 pcm_buf, &pcm_size);
+#endif /* VOICE_ENC_TYPE */
+
+	if (ret < 0) {
 		LOG_DBG("ppt slave: sbc_decode failed ret=%d frame_idx=%d",
 			ret, data[VOICE_PPT_OFFSET_FRAME_IDX]);
 		return;
 	}
 
+	LOG_DBG("ppt slave: sbc_decode ok consumed=%d pcm_size=%d frame_idx=%d",
+		ret, pcm_size, data[VOICE_PPT_OFFSET_FRAME_IDX]);
+
+#if FEATURE_SUPPORT_UART_DUMP_VOICE_DECODE_DATA
+	if (dump_uart != NULL) {
+		for (int i = 0; i < pcm_size; i++) {
+			uart_poll_out(dump_uart, pcm_buf[i]);
+		}
+	}
+#endif
+	Pad_Config(P0_0, PAD_SW_MODE, PAD_IS_PWRON, PAD_PULL_DOWN, PAD_OUT_ENABLE,
+                   PAD_OUT_HIGH);
+	Pad_Config(P0_0, PAD_SW_MODE, PAD_IS_PWRON, PAD_PULL_DOWN, PAD_OUT_ENABLE,
+                   PAD_OUT_LOW);
 	app_usb_audio_send(pcm_buf, pcm_size);
 }
 
@@ -97,13 +132,19 @@ void voice_ppt_slave_init(void)
 	memset(&voice_ppt_slave_data, 0, sizeof(voice_ppt_slave_data));
 	voice_ppt_slave_data.state = VOICE_PPT_SLAVE_STATE_IDLE;
 
+#if FEATURE_SUPPORT_UART_DUMP_VOICE_DECODE_DATA
+	dump_uart = DEVICE_DT_GET_OR_NULL(DT_CHOSEN(voice_console));
+	if (dump_uart == NULL || !device_is_ready(dump_uart)) {
+		LOG_WRN("ppt slave: dump uart not ready, PCM dump disabled");
+		dump_uart = NULL;
+	}
+#endif
+
 	sync_init(SYNC_ROLE_SLAVE);
 	sync_event_cb_reg(ppt_slave_event_cb);
 	sync_msg_reg_receive_cb(ppt_slave_receive_cb);
 
 	sync_pair_rssi_set(-65);
-    /* set 2.4g connection interval */
-    sync_time_set(1000, 1000);
 
     // /*set crc 8*/
     // sync_crc_set(8, 0x07, 0xff);
