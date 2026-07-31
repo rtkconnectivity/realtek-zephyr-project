@@ -24,7 +24,7 @@ typedef struct {
 extern T_VOICE_PPT_SLAVE_DATA voice_ppt_slave_data;
 
 /**
- * @brief Initialize 2.4G slave role and mSBC decoder (call once at startup)
+ * @brief Initialize 2.4G slave role and SBC/mSBC decoder (call once at startup)
  */
 void voice_ppt_slave_init(void);
 
@@ -42,9 +42,9 @@ void app_usb_audio_init(void);
  * @brief Send decoded PCM audio over USB.
  *
  * Implemented in src/ppt/usb_audio.c.
- * Called by voice_ppt_slave.c after each mSBC frame is decoded.
+ * Called by voice_ppt_slave.c after each frame is decoded.
  *
  * @param pcm_data  Pointer to raw 16-bit mono PCM samples
- * @param pcm_size  Number of bytes (240 bytes per mSBC frame at 16kHz)
+ * @param pcm_size  Number of bytes (SW_MSBC_ENC: 240 bytes/frame, SW_SBC_ENC: 256 bytes/frame)
  */
 void app_usb_audio_send(const uint8_t *pcm_data, int pcm_size);
