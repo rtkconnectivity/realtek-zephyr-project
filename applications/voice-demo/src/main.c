@@ -32,10 +32,10 @@ int main()
 #if IS_ENABLED(CONFIG_VOICE_PPT_MASTER)
 	voice_ppt_master_init();
 	voice_ppt_master_enable();
+	voice_test_button_init();
 #elif IS_ENABLED(CONFIG_VOICE_PPT_SLAVE)
 	app_usb_audio_init();
 	voice_ppt_slave_init();
 	voice_ppt_slave_enable();
 #endif
-	voice_test_button_init();
 }

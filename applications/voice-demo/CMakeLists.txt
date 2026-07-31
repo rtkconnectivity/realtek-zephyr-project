@@ -19,8 +19,8 @@ target_sources(app PRIVATE
 target_sources_ifdef(CONFIG_BT app PRIVATE ${BLE_SOURCES})
 target_sources_ifdef(CONFIG_AUDIO app PRIVATE ${VOICE_SOURCES})
 target_sources_ifdef(CONFIG_VOICE_PPT_MASTER app PRIVATE src/ppt/voice_ppt_master.c)
-target_sources_ifdef(CONFIG_VOICE_PPT_MASTER app PRIVATE src/button.c)
-target_sources_ifdef(CONFIG_VOICE_PPT_MASTER app PRIVATE src/button.c)
+target_sources_ifdef(CONFIG_VOICE_PPT_MASTER app PRIVATE src/button/button.c)
+target_sources_ifdef(CONFIG_VOICE_PPT_MASTER app PRIVATE src/button/button_handle.c)
 
 target_sources_ifdef(CONFIG_VOICE_PPT_SLAVE app PRIVATE
     src/ppt/usb_audio.c
