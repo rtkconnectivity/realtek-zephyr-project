@@ -103,7 +103,7 @@ queue_buf:
 	}
 	net_buf_reset(buf);
 	net_buf_add_mem(buf, tmp, USB_FRAME_BYTES);
-	LOG_DBG("USB audio send voice data sof=%u", sof_count);
+	// LOG_DBG("USB audio send voice data sof=%u", sof_count);
 
 #if FEATURE_SUPPORT_UART_DUMP_UAC_SEND_DATA
 	/* Dump every 10th frame to keep UART output below ~9600 B/s (fits 115200 baud). */
@@ -116,15 +116,23 @@ queue_buf:
 
 	ret = usb_audio_send(dev, buf, USB_FRAME_BYTES);
 	if (ret != 0) {
-		LOG_WRN("usb audio: usb_audio_send ret=%d sof=%u", ret, sof_count);
 		net_buf_unref(buf);
-		/* Reschedule so the transfer chain is not broken on failure */
+		if (ret == -EAGAIN) {
+			/* Host switched to passive interface (tx_enable=false).
+			 * Stop driving the transfer chain — it will be restarted
+			 * by data_request_cb when the host re-opens alt=1.
+			 */
+			LOG_DBG("usb audio: passive interface, stopping (sof=%u)", sof_count);
+			return;
+		}
+		/* Transient transfer error — keep the chain alive. */
+		LOG_WRN("usb audio: usb_audio_send ret=%d sof=%u", ret, sof_count);
 		k_work_reschedule(&usb_prime_work, K_NO_WAIT);
 		return;
 	}
 
 	sof_count++;
-	if (sof_count % 200 == 0) {
+	if (sof_count % 600 == 0) {
 		LOG_INF("usb audio: sent %u SOF frames, rb_free=%u",
 			sof_count, ring_buf_space_get(&mic_rb));
 	}
@@ -133,7 +141,7 @@ queue_buf:
 static void data_written_cb(const struct device *dev, struct net_buf *buf, size_t size)
 {
 	net_buf_unref(buf);
-	LOG_DBG("XFER_COMPL: size=%d", size);
+	// LOG_DBG("XFER_COMPL: size=%d", size);
 	/* RTL87x2G doesn't fire USB_DC_SOF, drive the next frame from write-completion. */
 	k_work_reschedule(&usb_prime_work, K_NO_WAIT);
 }
@@ -172,9 +180,17 @@ static void usb_status_cb(enum usb_dc_status_code status, const uint8_t *param)
 {
 	LOG_INF("USB status: %s (%d)", usb_status_str(status), (int)status);
 
+	/* On interface change, cancel any pending work so the pump doesn't
+	 * keep firing while the host is on the passive (alt=0) interface.
+	 * The transfer chain restarts via data_request_cb when alt=1 opens. */
+	if (status == USB_DC_INTERFACE) {
+		k_work_cancel_delayable(&usb_prime_work);
+	}
+
 	/* On disconnect/reset, flush the ring buffer and reset the pre-fill gate
 	 * so the next connection starts clean. */
 	if (status == USB_DC_DISCONNECTED || status == USB_DC_RESET) {
+		k_work_cancel_delayable(&usb_prime_work);
 		ring_buf_reset(&mic_rb);
 		mic_primed = false;
 		empty_frame_count = 0;
