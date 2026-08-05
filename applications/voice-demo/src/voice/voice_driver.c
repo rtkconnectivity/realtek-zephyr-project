@@ -26,8 +26,12 @@ static struct audio_codec_cfg codec_cfg;
 T_VOICE_DRIVER_GLOBAL_DATA voice_driver_global_data;
 
 #define BLOCK_SIZE    480
-#define NUM_RX_BLOCKS 2
-#define MAX_VOICE_TIMEOUT_SEC	2
+/* Need ≥ 2 to start DMA.  Extra blocks absorb the window where DMA callback
+ * fires before the app thread has called i2s_read() to free the previous
+ * block; without headroom the driver logs "buffer alloc from slab err -12"
+ * and enters I2S_STATE_ERROR mid-recording. */
+#define NUM_RX_BLOCKS 4
+#define MAX_VOICE_TIMEOUT_SEC	60
 
 K_MEM_SLAB_DEFINE(rx_mem_slab, BLOCK_SIZE, NUM_RX_BLOCKS, 32);
 // K_MEM_SLAB_DEFINE(tx_mem_slab, BLOCK_SIZE, NUM_RX_BLOCKS, 32);
@@ -67,7 +71,10 @@ static void voice_driver_init_codec_i2s(void)
 
 	codec_cfg.dai_cfg.i2s.block_size = BLOCK_SIZE;
 	codec_cfg.dai_cfg.i2s.mem_slab = &rx_mem_slab;
-	codec_cfg.dai_cfg.i2s.timeout = SYS_FOREVER_MS;
+	/* Use a finite timeout so i2s_read() can return -EAGAIN when the stream
+	 * is stopped (DROP clears out_queue but SYS_FOREVER_MS would block
+	 * forever, preventing the rx thread from exiting its loop). */
+	codec_cfg.dai_cfg.i2s.timeout = 100;
 
 	ret = audio_codec_configure(dev_codec, &codec_cfg);
 	if (ret) {

@@ -9,6 +9,7 @@
 #include <zephyr/device.h>
 #include <zephyr/bluetooth/addr.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/sys/atomic.h>
 #include <config.h>
 #include <voice/voice_driver.h>
 #include <voice/voice_handle.h>
@@ -35,6 +36,18 @@ LOG_MODULE_DECLARE(app, CONFIG_APP_LOG_LEVEL);
 static struct k_thread voice_rx_data;
 K_THREAD_STACK_DEFINE(voice_rx_stack, 768); /* if stack size < 768, hardfault will occur */
 struct k_work voice_work_q;
+
+/* ── Session control (fixes repeated-press recording failure) ─────────────
+ * Root cause: k_thread_suspend() called while thread is blocked in
+ * i2s_read(SYS_FOREVER_MS) never wakes after i2s_trigger(DROP).
+ * Fix: gate each session with a semaphore pair + atomic running flag.
+ *   sem_start   – posted by voice_handle_start_mic()   → thread wakes
+ *   sem_stopped – posted by thread on clean exit       → stop waits on it
+ *   voice_rx_running – atomic flag, cleared by stop to exit the rx loop
+ * ─────────────────────────────────────────────────────────────────────── */
+static K_SEM_DEFINE(sem_start,   0, 1);
+static K_SEM_DEFINE(sem_stopped, 0, 1);
+static atomic_t voice_rx_running = ATOMIC_INIT(0);
 
 /*============================================================================*
  *                              Local Variables
@@ -424,64 +437,97 @@ void voice_handle_rx_data_callback(struct k_work *item)
 
 static void voice_rx_thread(void *p1, void *p2, void *p3)
 {
-    LOG_DBG("voice rx thread: ");
     ARG_UNUSED(p1);
-	ARG_UNUSED(p2);
-	ARG_UNUSED(p3);
+    ARG_UNUSED(p2);
+    ARG_UNUSED(p3);
+
+    LOG_DBG("voice rx thread started");
+
     while (true) {
-        void *mem_block;
-        size_t rx_size;
-        const struct i2s_config *rx_cfg;
-        int ret = i2s_read(dev_i2s, &mem_block, &rx_size);
-        if (ret) {
-            LOG_ERR("[%s] ret%d line%d\n", __func__, ret, __LINE__);
-        } else {
+        /* ── Wait for a new recording session ─────────────────────────── */
+        k_sem_take(&sem_start, K_FOREVER);
+        LOG_DBG("voice rx: session begin");
+
+        /* ── Recording loop ────────────────────────────────────────────── */
+        while (atomic_get(&voice_rx_running)) {
+            void *mem_block;
+            size_t rx_size;
+            const struct i2s_config *rx_cfg;
+
+            int ret = i2s_read(dev_i2s, &mem_block, &rx_size);
+            if (ret) {
+                if (!atomic_get(&voice_rx_running)) {
+                    /* Normal: stop requested, -EAGAIN/-EIO from DROP */
+                    break;
+                }
+                if (ret == -EAGAIN) {
+                    /* Transient timeout — keep trying */
+                    continue;
+                }
+                LOG_ERR("i2s_read failed: %d", ret);
+                break;
+            }
+
             voice_global_data.voice_data_total_cnt += rx_size;
-            memcpy(voice_global_data.voice_data_buf.buf,mem_block,rx_size);
-            /* Need to send msg to prevent long app processing time from affecting dma transfer */
+            memcpy(voice_global_data.voice_data_buf.buf, mem_block, rx_size);
+
             struct voice_msg ev = {
                 .buf = voice_global_data.voice_data_buf.buf,
                 .len = rx_size
             };
-            LOG_DBG("voice recieve data: cur size %d, total size %d",rx_size, voice_global_data.voice_data_total_cnt);
+            LOG_DBG("voice rx: cur=%u total=%u B", (uint32_t)rx_size,
+                    voice_global_data.voice_data_total_cnt);
+
             rx_cfg = i2s_config_get(dev_i2s, I2S_DIR_RX);
             k_mem_slab_free(rx_cfg->mem_slab, mem_block);
             k_msgq_put(&voice_msgq, &ev, K_NO_WAIT);
             k_work_submit(&voice_work_q);
-        }
+
 #if FEATURE_SUPPORT_UART_DUMP_VOICE_RAW_DATA
-        if (dev_uart != NULL) {
-            for (uint32_t i = 0; i < rx_size; i += 8) {
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 1]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 2]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 3]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 4]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 5]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 6]);
-                uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 7]);
+            if (dev_uart != NULL) {
+                for (uint32_t i = 0; i < rx_size; i += 8) {
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 1]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 2]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 3]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 4]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 5]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 6]);
+                    uart_poll_out(dev_uart, voice_global_data.voice_data_buf.buf[i + 7]);
+                }
             }
-        }
 #endif
+        }
+
+        /* ── Session ended — signal caller cleanly ─────────────────────── */
+        LOG_DBG("voice rx: session end (total=%u B)",
+                voice_global_data.voice_data_total_cnt);
+        k_msgq_purge(&voice_msgq);
+        k_sem_give(&sem_stopped);
     }
 }
 
 void voice_handle_start_rx_data(void)
 {
     static bool is_voice_rx_thread_created = false;
-    if(!is_voice_rx_thread_created) {
-        k_tid_t tid;
-        tid = k_thread_create(&voice_rx_data, voice_rx_stack,
-                            K_KERNEL_STACK_SIZEOF(voice_rx_stack),
-                            voice_rx_thread, NULL, NULL, NULL,
-                            K_PRIO_COOP(10), 0, K_NO_WAIT);
+
+    /* Arm the running flag before waking the thread so the rx loop never
+     * starts with the flag already cleared from a previous session. */
+    atomic_set(&voice_rx_running, 1);
+
+    if (!is_voice_rx_thread_created) {
+        k_tid_t tid = k_thread_create(&voice_rx_data, voice_rx_stack,
+                                      K_KERNEL_STACK_SIZEOF(voice_rx_stack),
+                                      voice_rx_thread, NULL, NULL, NULL,
+                                      K_PRIO_COOP(10), 0, K_NO_WAIT);
         k_thread_name_set(tid, "voice rx thread");
-        if(tid) {
+        if (tid) {
             is_voice_rx_thread_created = true;
         }
-    } else {
-        k_thread_resume(&voice_rx_data);
     }
+    /* Give sem_start every session (replaces k_thread_resume which was unsafe
+     * when the thread was blocked inside i2s_read). */
+    k_sem_give(&sem_start);
 }
 #if (VOICE_FLOW_SEL == RTK_GATT_VOICE_FLOW)
 /******************************************************************
@@ -603,18 +649,30 @@ bool voice_handle_start_mic(void)
 void voice_handle_stop_mic(void)
 {
     LOG_DBG("stop recording!");
-    k_thread_suspend(&voice_rx_data);
 
-    if (voice_driver_global_data.is_voice_driver_working == false)
-    {
+    if (voice_driver_global_data.is_voice_driver_working == false) {
         LOG_DBG("Voice driver is not working, stop failed!");
+        return;
     }
-    else
-    {
-        voice_driver_deinit();
-        voice_handle_deinit_encode_param();
-        loop_queue_deinit(&p_voice_queue);
+
+    /* 1. Signal rx thread to exit its recording loop */
+    atomic_set(&voice_rx_running, 0);
+
+    /* 2. Drop I2S — causes the pending i2s_read() to return -EAGAIN/-EIO
+     *    so the thread unblocks immediately instead of waiting for DMA. */
+    voice_driver_deinit();
+
+    /* 3. Wait for the thread to finish the current session cleanly.
+     *    Guarantees the slab is fully freed before the next init. */
+    int sem_ret = k_sem_take(&sem_stopped, K_MSEC(500));
+    if (sem_ret != 0) {
+        LOG_ERR("voice rx thread did not stop in 500 ms (ret=%d)", sem_ret);
+    } else {
+        LOG_DBG("voice rx: thread stopped cleanly");
     }
+
+    voice_handle_deinit_encode_param();
+    loop_queue_deinit(&p_voice_queue);
 }
 
 /******************************************************************
