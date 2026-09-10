@@ -1,0 +1,3 @@
+# Python requirements to build the Realtek Bee driver documentation (see conf.py).
+sphinx>=7,<10
+sphinx-rtd-theme>=2
