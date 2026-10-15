@@ -15,7 +15,7 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: realtek-main-v4.4
+      revision: pull/314/head
       import:
         name-allowlist:
           - cmsis
@@ -38,7 +38,7 @@ manifest:
     #
     - name: hal_realtek
       remote: rtkconnectivity
-      revision: hal_realtek_v4.4
+      revision: pull/21/head
       path: modules/hal/realtek
       groups:
         - hal
