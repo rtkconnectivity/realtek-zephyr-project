@@ -34,7 +34,7 @@ manifest:
           - mipi-sys-t
 
     #
-    # Realtek based overrides of hal_realtek modules
+    # Realtek based overrides of hal_realtek and mcuboot modules
     #
     - name: hal_realtek
       remote: rtkconnectivity
@@ -42,3 +42,10 @@ manifest:
       path: modules/hal/realtek
       groups:
         - hal
+
+    - name: mcuboot
+      remote: rtkconnectivity
+      revision: v4.4-bee
+      path: bootloader/mcuboot
+      groups:
+        - bootloader
