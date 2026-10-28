@@ -34,7 +34,7 @@ manifest:
           - mipi-sys-t
 
     #
-    # Realtek based overrides of hal_realtek and mcuboot modules
+    # Realtek based overrides of hal_realtek, mcuboot and tf-psa-crypto modules
     #
     - name: hal_realtek
       remote: rtkconnectivity
@@ -45,7 +45,16 @@ manifest:
 
     - name: mcuboot
       remote: rtkconnectivity
+      repo-path: zephyr-mcuboot
       revision: v4.4-bee
       path: bootloader/mcuboot
       groups:
         - bootloader
+
+    - name: tf-psa-crypto
+      remote: rtkconnectivity
+      repo-path: zephyr-tf-psa-crypto
+      revision: v4.4.0-bee-psa-accelerators
+      path: modules/crypto/tf-psa-crypto
+      groups:
+        - crypto
