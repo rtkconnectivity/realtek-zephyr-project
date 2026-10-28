@@ -380,10 +380,14 @@ SRCS_FMC := \
 	$(RTK_DRIVER)/fmc/src/eflash/rtl87x2j/eflash_driver.c \
 	$(RTK_DRIVER)/fmc/src/eflash_api/eflash.c
 
-# AES interface used by rot_ctrl.c, plus its CN4 hardware implementation
+# AES interface used by rot_ctrl.c, plus its CN4 hardware implementation.
+# SHA-2 interface and CN4 engine are used by the Zephyr PSA hardware
+# accelerator driver (sha2_init, sha2_start, sha2_cpu_update, ...).
 SRCS_CRYPTO := \
 	$(RTK_DRIVER)/crypto/src/crypto_interface/symmetric/aes_interface.c \
-	$(RTK_DRIVER)/crypto/src/hardware_driver/cn4/symmetric/aes_engine_driver.c
+	$(RTK_DRIVER)/crypto/src/hardware_driver/cn4/symmetric/aes_engine_driver.c \
+	$(RTK_DRIVER)/crypto/src/crypto_interface/hash/sha2_interface.c \
+	$(RTK_DRIVER)/crypto/src/hardware_driver/cn4/hash/sha2_engine_driver.c
 
 # All sources
 SRCS := \
