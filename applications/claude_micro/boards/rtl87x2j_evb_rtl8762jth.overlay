@@ -1,0 +1,199 @@
+/*
+ * Copyright (c) 2025 Realtek Semiconductor Corp.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * claude_micro overlay for rtl87x2j_evb/rtl8762jth
+ *
+ * Pin usage (EVB):
+ *   P0_0/P0_1/P1_0/P1_1   SWD (reserved)
+ *   P0_3                  Realtek internal log (reserved)
+ *   P1_1                  led0 (board)
+ *   P3_0 / P3_3           UART2 TX / RX console @ 2 Mbps
+ *                         (RX moved from P3_1, which drives the blue LED)
+ *   P3_1 / P3_4 / P3_5    RGB LED  B / G / R  (mic key status)
+ *   P2_2 / P2_0 / P3_6    window 1 / 2 / 3 status LEDs
+ *   P2_1 / P2_5           KEY4 / KEY5 -> test-pin1 / test-pin2
+ *   P0_4 / P1_6           test-pin3 / test-pin4
+ *   P2_6 / P2_7 / MICBIAS internal codec AMIC
+ */
+
+#include <zephyr/dt-bindings/gpio/realtek-bee-gpio.h>
+#include <zephyr/dt-bindings/usb/audio.h>
+
+/ {
+	test_pin: test_pin {
+		compatible = "voice,test-pin";
+		/* btn1: mic toggle (KEY4, P2_1) */
+		test-pin1 = <&gpioa 13 (GPIO_ACTIVE_HIGH | BEE_GPIO_INPUT_DEBOUNCE_MS(8))>;
+		/* btn2: win1 (KEY5, P2_5) */
+		test-pin2 = <&gpioa 17 (GPIO_ACTIVE_HIGH | BEE_GPIO_INPUT_DEBOUNCE_MS(8))>;
+		/* btn3: win2 (P0_4) */
+		test-pin3 = <&gpioa 4 (GPIO_ACTIVE_HIGH | BEE_GPIO_INPUT_DEBOUNCE_MS(8))>;
+		/* btn4: win3 (P1_6) */
+		test-pin4 = <&gpioa 10 (GPIO_ACTIVE_HIGH | BEE_GPIO_INPUT_DEBOUNCE_MS(8))>;
+	};
+
+	rgb_leds {
+		compatible = "gpio-leds";
+
+		rgb_r: rgb_r {
+			gpios = <&gpioa 25 GPIO_ACTIVE_LOW>; /* P3_5 */
+			label = "RGB Red";
+		};
+
+		rgb_g: rgb_g {
+			gpios = <&gpioa 24 GPIO_ACTIVE_LOW>; /* P3_4 */
+			label = "RGB Green";
+		};
+
+		rgb_b: rgb_b {
+			gpios = <&gpioa 21 GPIO_ACTIVE_LOW>; /* P3_1 */
+			label = "RGB Blue";
+		};
+	};
+
+	/* Single-colour window status LEDs (win1..3 YES keys) */
+	win_leds {
+		compatible = "gpio-leds";
+
+		win1_led: win1_led {
+			gpios = <&gpioa 14 GPIO_ACTIVE_LOW>; /* P2_2 */
+			label = "Window 1";
+		};
+
+		win2_led: win2_led {
+			gpios = <&gpioa 12 GPIO_ACTIVE_LOW>; /* P2_0 */
+			label = "Window 2";
+		};
+
+		win3_led: win3_led {
+			gpios = <&gpioa 26 GPIO_ACTIVE_LOW>; /* P3_6 */
+			label = "Window 3";
+		};
+	};
+
+	uac2_mic: usb_audio2 {
+		compatible = "zephyr,uac2";
+		status = "okay";
+		full-speed;
+		audio-function = <AUDIO_FUNCTION_MICROPHONE>;
+
+		uac_aclk: aclk {
+			compatible = "zephyr,uac2-clock-source";
+			clock-type = "internal-fixed";
+			frequency-control = "read-only";
+			/* Must match CONFIG_APP_UAC_SAMPLE_RATE */
+			sampling-frequencies = <16000>;
+		};
+
+		mic_input: microphone {
+			compatible = "zephyr,uac2-input-terminal";
+			clock-source = <&uac_aclk>;
+			terminal-type = <INPUT_TERMINAL_MICROPHONE>;
+			front-left;
+		};
+
+		in_terminal: in_terminal {
+			compatible = "zephyr,uac2-output-terminal";
+			data-source = <&mic_input>;
+			clock-source = <&uac_aclk>;
+			terminal-type = <USB_TERMINAL_STREAMING>;
+		};
+
+		as_iso_in: in_interface {
+			compatible = "zephyr,uac2-audio-streaming";
+			linked-terminal = <&in_terminal>;
+			subslot-size = <2>;
+			bit-resolution = <16>;
+		};
+	};
+
+	hid_dev_0: hid_dev_0 {
+		compatible = "zephyr,hid-device";
+		label = "HID0";
+		protocol-code = "none";
+		in-report-size = <2>;
+		in-polling-period-us = <10000>;
+		out-report-size = <4>;
+		out-polling-period-us = <10000>;
+	};
+};
+
+&gpioa_default {
+	group1 {
+		psels = <BEE_PSEL_GPIOA_4_P0_4>,
+			<BEE_PSEL_GPIOA_9_P1_1>,
+			<BEE_PSEL_GPIOA_10_P1_6>,
+			<BEE_PSEL_GPIOA_12_P2_0>,
+			<BEE_PSEL_GPIOA_13_P2_1>,
+			<BEE_PSEL_GPIOA_14_P2_2>,
+			<BEE_PSEL_GPIOA_17_P2_5>,
+			<BEE_PSEL_GPIOA_21_P3_1>,
+			<BEE_PSEL_GPIOA_24_P3_4>,
+			<BEE_PSEL_GPIOA_25_P3_5>,
+			<BEE_PSEL_GPIOA_26_P3_6>;
+	};
+};
+
+/* UART2 RX: P3_1 -> P3_3 (P3_1 is the blue LED) */
+&uart2_default {
+	group2 {
+		psels = <BEE_PSEL(UART2_RX, P3_3)>;
+	};
+};
+
+&uart2_sleep {
+	group2 {
+		psels = <BEE_PSEL(IDLE_MODE, P3_3)>;
+	};
+};
+
+&uart2 {
+	current-speed = <2000000>;
+};
+
+&dma0 {
+	status = "okay";
+};
+
+/* Internal codec path, no external I2S pins */
+&i2s0 {
+	dmas = <&dma0 0 16 0x26a1>, <&dma0 1 17 0x648a>;
+	dma-names = "tx", "rx";
+	status = "okay";
+
+	codec: codec@0 {
+		compatible = "realtek,bee-codec";
+		reg = <0>;
+		clocks = <&cctl APB_CLK(CODEC)>;
+		channel-sequence = "l_r";
+		mic-bias = "1_8";
+		mic-bst-gain = "30dB";
+		mic-bst-mode = "differential";
+		mic-type = "amic";
+		dmic-data-latch = "rising_latch";
+		ad-gain = <0x2f>;
+		boost-gain = "0dB";
+		pinctrl-0 = <&codec_default>;
+		pinctrl-names = "default";
+		status = "okay";
+	};
+};
+
+&pinctrl {
+	codec_default: codec_default {
+		group1 {
+			psels = <BEE_PSEL(PWR_OFF, P2_6)>,
+				<BEE_PSEL(PWR_OFF, P2_7)>;
+			output-disable;
+			bias-disable;
+		};
+
+		group2 {
+			psels = <BEE_PSEL(SW_MODE, MICBIAS)>;
+			output-enable;
+			output-high;
+			bias-disable;
+		};
+	};
+};
