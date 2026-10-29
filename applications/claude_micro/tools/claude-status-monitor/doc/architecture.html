@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MCU ↔ Claude Code 交互架构</title>
+  <style>
+    :root {
+      --bg:        #0f1117;
+      --card:      #1a1d27;
+      --card2:     #22263a;
+      --border:    #2e3347;
+      --text:      #e6eaf4;
+      --muted:     #7a82a0;
+      --blue:      #4e9eff;
+      --yellow:    #faad14;
+      --green:     #52c41a;
+      --red:       #ff4d4f;
+      --orange:    #fa8c16;
+      --purple:    #9b7de8;
+      --cyan:      #36cfc9;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      padding: 40px 24px 80px;
+    }
+
+    /* ── Header ── */
+    .page-header {
+      max-width: 960px;
+      margin: 0 auto 48px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 24px;
+    }
+    .page-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-right: 6px;
+    }
+    .badge-blue   { background: #0d2a4a; color: var(--blue); }
+    .badge-green  { background: #0d2e14; color: var(--green); }
+    .badge-yellow { background: #2e2200; color: var(--yellow); }
+    .badge-red    { background: #2e0d0d; color: var(--red); }
+    .badge-purple { background: #1e1530; color: var(--purple); }
+
+    /* ── Section ── */
+    section {
+      max-width: 960px;
+      margin: 0 auto 48px;
+    }
+    section h2 {
+      font-size: 19px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    section h2::before {
+      content: "";
+      display: inline-block;
+      width: 4px;
+      height: 20px;
+      border-radius: 2px;
+      background: var(--blue);
+      flex-shrink: 0;
+    }
+
+    /* ── Architecture diagram ── */
+    .arch-diagram {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      overflow-x: auto;
+    }
+
+    .arch-row {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 0;
+    }
+
+    .arch-layer {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+      flex: 1;
+      min-width: 200px;
+    }
+    .arch-layer.claude  { border-color: #2a4a7a; background: #111827; }
+    .arch-layer.host    { border-color: #1a3a2a; background: #101c16; }
+    .arch-layer.mcu     { border-color: #2a1a3a; background: #16101e; }
+
+    .layer-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .claude .layer-title { color: var(--blue); }
+    .host   .layer-title { color: var(--green); }
+    .mcu    .layer-title { color: var(--purple); }
+
+    .hook-box {
+      background: #0d2a4a;
+      border: 1px solid #1a4a7a;
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .hook-box .hook-name {
+      font-weight: 700;
+      color: var(--blue);
+      font-size: 12px;
+    }
+    .hook-box .hook-desc {
+      color: var(--muted);
+      font-size: 12px;
+      margin-top: 2px;
+    }
+
+    .component-box {
+      border-radius: 6px;
+      padding: 8px 12px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .cb-green  { background: #0a2010; border: 1px solid #1a4a2a; }
+    .cb-purple { background: #160e28; border: 1px solid #2e1a5a; }
+    .cb-orange { background: #1e1200; border: 1px solid #4a2e00; }
+
+    .comp-name { font-weight: 600; font-size: 13px; }
+    .comp-desc { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .cb-green  .comp-name { color: var(--green); }
+    .cb-purple .comp-name { color: var(--purple); }
+    .cb-orange .comp-name { color: var(--orange); }
+
+    /* ── Arrows between layers ── */
+    .arch-arrows {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 12px 0;
+    }
+    .arrow-col {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .arrow-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-align: center;
+    }
+    .arrow-line {
+      width: 2px;
+      height: 32px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .arrow-line.down  { background: linear-gradient(var(--blue),  var(--green)); }
+    .arrow-line.up    { background: linear-gradient(var(--green), var(--purple)); }
+    .arrow-line.both  { background: linear-gradient(var(--blue),  var(--purple)); }
+
+    .arrow-tip-down::after {
+      content: "▼";
+      color: var(--green);
+      font-size: 10px;
+      position: absolute;
+      bottom: -12px;
+    }
+    .arrow-tip-up::before {
+      content: "▲";
+      color: var(--green);
+      font-size: 10px;
+      position: absolute;
+      top: -12px;
+    }
+
+    /* ── HID protocol box ── */
+    .hid-bar {
+      background: #1a1020;
+      border: 1px dashed #3a2a5a;
+      border-radius: 8px;
+      padding: 14px 20px;
+      margin: 4px 0;
+      display: flex;
+      justify-content: space-around;
+      gap: 20px;
+    }
+    .hid-report {
+      text-align: center;
+    }
+    .hid-report .report-id {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--purple);
+    }
+    .hid-report .report-dir {
+      font-size: 11px;
+      color: var(--muted);
+      margin: 2px 0;
+    }
+    .hid-report .report-payload {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      font-size: 12px;
+      color: var(--cyan);
+      background: #0d0820;
+      border-radius: 4px;
+      padding: 4px 10px;
+      margin-top: 6px;
+    }
+    .hid-report .report-desc {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    /* ── Table ── */
+    .info-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .info-table th {
+      background: var(--card2);
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 10px 16px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+    .info-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .info-table tr:last-child td {
+      border-bottom: none;
+    }
+    .info-table tr:hover td {
+      background: rgba(255,255,255,0.02);
+    }
+    .info-table .card-wrap {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    /* ── Flow cards ── */
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 20px;
+    }
+    .flow-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 20px 24px;
+    }
+    .flow-card h3 {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .flow-icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .fi-blue   { background: #0d2a4a; }
+    .fi-yellow { background: #2e2200; }
+    .fi-green  { background: #0d2e14; }
+    .fi-purple { background: #1e1530; }
+
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-step {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      position: relative;
+    }
+    .flow-step:not(:last-child)::before {
+      content: "";
+      position: absolute;
+      left: 13px;
+      top: 28px;
+      width: 2px;
+      height: calc(100% - 4px);
+      background: var(--border);
+    }
+    .step-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: var(--card2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--muted);
+      flex-shrink: 0;
+      z-index: 1;
+    }
+    .step-body {
+      padding: 4px 0 16px;
+      flex: 1;
+    }
+    .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .step-detail {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .step-code {
+      font-family: "Cascadia Code", "Consolas", monospace;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 4px 10px;
+      font-size: 11px;
+      color: var(--cyan);
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    /* ── Gap table ── */
+    .gap-row td:first-child { color: var(--text); font-weight: 500; }
+    .status-ok   { color: var(--green); }
+    .status-miss { color: var(--red); }
+
+    /* ── Footer ── */
+    .page-footer {
+      max-width: 960px;
+      margin: 0 auto;
+      border-top: 1px solid var(--border);
+      padding-top: 20px;
+      color: var(--muted);
+      font-size: 13px;
+      display: flex;
+      justify-content: space-between;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header class="page-header">
+  <h1>MCU ↔ Claude Code 交互架构</h1>
+  <p>
+    <span class="badge badge-blue">RTL8762GKH</span>
+    <span class="badge badge-green">Zephyr RTOS</span>
+    <span class="badge badge-purple">USB HID</span>
+    <span class="badge badge-yellow">Claude Code Hooks</span>
+    更新于 2026-08-05
+  </p>
+</header>
+
+<!-- ═══ 1. 总体架构图 ═══ -->
+<section>
+  <h2>总体架构</h2>
+  <div class="arch-diagram">
+
+    <!-- Claude Code 层 -->
+    <div class="arch-row">
+      <div class="arch-layer claude" style="max-width:860px;width:100%">
+        <div class="layer-title">☁ Claude Code（PC 进程）</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="hook-box" style="flex:1;min-width:180px">
+            <div class="hook-name">PreToolUse Hook</div>
+            <div class="hook-desc">每次工具执行前触发<br>→ state_writer.py <code style="color:var(--cyan)">working</code><br>→ gate_hook.py（阻塞等待决策）</div>
+          </div>
+          <div class="hook-box" style="flex:1;min-width:180px">
+            <div class="hook-name">PermissionRequest Hook</div>
+            <div class="hook-desc">危险操作需用户授权时触发<br>→ state_writer.py <code style="color:var(--yellow)">waiting</code><br>→ notify.py 桌面通知</div>
+          </div>
+          <div class="hook-box" style="flex:1;min-width:180px">
+            <div class="hook-name">Stop Hook</div>
+            <div class="hook-desc">任务完成、等待下条指令时触发<br>→ state_writer.py <code style="color:var(--green)">success</code><br>→ notify.py 完成通知</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#080e1a;border-radius:6px;padding:10px 14px;font-size:12px;color:var(--muted)">
+          📁 共享状态目录：<code style="color:var(--cyan)">~/.claude/monitor/</code> &nbsp;|&nbsp;
+          <code style="color:var(--cyan)">state_*.json</code>（会话状态）&nbsp;
+          <code style="color:var(--cyan)">gate_*.json</code>（确认模式控制）
+        </div>
+      </div>
+    </div>
+
+    <!-- 箭头 -->
+    <div style="display:flex;justify-content:center;margin:16px 0;gap:4px;align-items:center">
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);padding:0 12px">
+        文件轮询 0.5 s &nbsp;↕&nbsp; JSON 文件读写
+      </div>
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+    </div>
+
+    <!-- 上位机层 -->
+    <div class="arch-row">
+      <div class="arch-layer host" style="max-width:860px;width:100%">
+        <div class="layer-title">💻 上位机后台（device_listener.py）</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="component-box cb-green" style="flex:1;min-width:160px">
+            <div class="comp-name">_led_sync_thread</div>
+            <div class="comp-desc">每 0.5s 读 state_*.json + gate_*.json<br>计算 win1/win2/win3 状态<br>每 10s 强制心跳发送一次</div>
+          </div>
+          <div class="component-box cb-green" style="flex:1;min-width:160px">
+            <div class="comp-name">_hid_thread</div>
+            <div class="comp-desc">常驻监听 USB HID IN (Report 0x01)<br>button1/2/3 按下 → allow gate<br>MCU 断线自动重连</div>
+          </div>
+          <div class="component-box cb-green" style="flex:1;min-width:160px">
+            <div class="comp-name">_audio_thread</div>
+            <div class="comp-desc">监听 USB UAC 音频流<br>VAD 检测语音片段<br>Whisper 本地识别 → 剪贴板</div>
+          </div>
+          <div class="component-box cb-orange" style="flex:1;min-width:160px">
+            <div class="comp-name">monitor_ui.py</div>
+            <div class="comp-desc">状态可视化面板<br>Yes/No 按钮 → gate decision<br>确认模式开关（默认开启）</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HID 协议条 -->
+    <div style="display:flex;justify-content:center;margin:16px 0;gap:4px;align-items:center">
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);padding:0 12px">
+        USB HID &nbsp;VID=0x2FE3 / PID=0x0100
+      </div>
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+    </div>
+    <div class="hid-bar" style="max-width:860px;margin:0 auto">
+      <div class="hid-report">
+        <div class="report-id">Report 0x01</div>
+        <div class="report-dir">MCU → Host &nbsp;(IN)</div>
+        <div class="report-payload">[0x01, btn_mask]</div>
+        <div class="report-desc">bit0=button1 &nbsp;bit1=button2 &nbsp;bit2=button3</div>
+      </div>
+      <div style="width:1px;background:var(--border)"></div>
+      <div class="hid-report">
+        <div class="report-id">Report 0x02</div>
+        <div class="report-dir">Host → MCU &nbsp;(OUT)</div>
+        <div class="report-payload">[0x02, win1, win2, win3]</div>
+        <div class="report-desc">0=idle &nbsp;1=working &nbsp;2=waiting &nbsp;3=success</div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:center;margin:16px 0;gap:4px;align-items:center">
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+      <div style="text-align:center;font-size:12px;color:var(--muted);padding:0 12px">
+        USB HID + UAC（音频）复合设备
+      </div>
+      <div style="height:1px;flex:1;max-width:200px;background:var(--border)"></div>
+    </div>
+
+    <!-- MCU 层 -->
+    <div class="arch-row">
+      <div class="arch-layer mcu" style="max-width:860px;width:100%">
+        <div class="layer-title">🔌 MCU（RTL8762GKH / Zephyr RTOS）</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div class="component-box cb-purple" style="flex:1;min-width:160px">
+            <div class="comp-name">hid_out_ready_cb</div>
+            <div class="comp-desc">收到 Report 0x02<br>→ k_work_submit<br>→ led_set_win_states()</div>
+          </div>
+          <div class="component-box cb-purple" style="flex:1;min-width:160px">
+            <div class="comp-name">app_usb_hid_send_win_key</div>
+            <div class="comp-desc">按键按下/释放时发送<br>Report 0x01<br>win_mask bit 对应 button 编号</div>
+          </div>
+          <div class="component-box cb-purple" style="flex:1;min-width:160px">
+            <div class="comp-name">led_set_win_states</div>
+            <div class="comp-desc">LD2=win1 LD3=win2 LD4=win3<br>WS2812 GRB 串行输出<br>SPI 6.4 MHz 编码</div>
+          </div>
+          <div class="component-box cb-purple" style="flex:1;min-width:160px">
+            <div class="comp-name">USB UAC 麦克风</div>
+            <div class="comp-desc">板载麦克风采集音频<br>16 kHz PCM 流<br>→ 上位机 Whisper 识别</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#0a0814;border-radius:6px;padding:10px 14px;font-size:12px;color:var(--muted)">
+          💡 LED 颜色：
+          <span style="color:#8080ff">■ 蓝=working</span> &nbsp;
+          <span style="color:#ffff00">■ 黄=waiting</span> &nbsp;
+          <span style="color:#00cc00">■ 绿=success</span> &nbsp;
+          <span style="color:#808080">■ 灰=idle</span> &nbsp;
+          亮度系数 STATE_DIM = 0x80 (range 0x00–0xFF)
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /arch-diagram -->
+</section>
+
+<!-- ═══ 2. Hook 与功能对应表 ═══ -->
+<section>
+  <h2>三条 Hook 与 MCU 状态对应</h2>
+  <div class="card-wrap">
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>Hook</th>
+          <th>触发时机</th>
+          <th>写入状态</th>
+          <th>MCU LED</th>
+          <th>UI 显示</th>
+          <th>自动重置</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-blue">PreToolUse</span></td>
+          <td>Claude 每次执行工具前</td>
+          <td><code style="color:var(--blue)">working</code></td>
+          <td><span style="color:#6666ff">■ 蓝灯脉冲</span></td>
+          <td>蓝色慢脉冲 + 工具名</td>
+          <td>超过 300 s → idle</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-yellow">PermissionRequest</span></td>
+          <td>危险操作需用户授权</td>
+          <td><code style="color:var(--yellow)">waiting</code></td>
+          <td><span style="color:#ffee00">■ 黄灯快脉冲</span></td>
+          <td>黄色快脉冲</td>
+          <td>超过 300 s → idle</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-green">Stop</span></td>
+          <td>任务完成、等待下条指令</td>
+          <td><code style="color:var(--green)">success</code></td>
+          <td><span style="color:#33dd33">■ 绿灯常亮</span></td>
+          <td>绿色常亮</td>
+          <td>超过 10 s → idle</td>
+        </tr>
+        <tr>
+          <td colspan="2" style="color:var(--muted);font-style:italic">（自动）无活跃会话 / 超时</td>
+          <td><code style="color:var(--muted)">idle</code></td>
+          <td><span style="color:#808080">■ 灰灯常亮</span></td>
+          <td>灰色常亮</td>
+          <td>—</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div style="margin-top:12px;font-size:13px;color:var(--muted);padding-left:4px">
+    ℹ️ <strong style="color:var(--text)">gate_hook（确认模式）</strong>是 PreToolUse 的子功能：gate 开启时，
+    每个工具执行前写入 <code>pending</code> 并<strong>阻塞 Claude</strong>，
+    直到 MCU 按键或 UI 点击 Yes/No 才继续。此时 UI 和 MCU LED 均显示黄色（waiting）。
+  </div>
+</section>
+
+<!-- ═══ 3. 各功能实现路径 ═══ -->
+<section>
+  <h2>各功能实现路径</h2>
+  <div class="flow-grid">
+
+    <!-- LED 状态同步 -->
+    <div class="flow-card">
+      <h3>
+        <div class="flow-icon fi-blue">💡</div>
+        LED 状态同步
+      </h3>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <div class="step-title">Hook 写入状态文件</div>
+            <div class="step-code">~/.claude/monitor/state_*.json</div>
+            <div class="step-detail">PreToolUse / Stop / PermissionRequest 触发</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <div class="step-title">_led_sync_thread 轮询</div>
+            <div class="step-detail">每 0.5 s 读全部 state_*.json，按 created_at 排序分配 win1/win2/win3</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <div class="step-title">发送 HID Report 0x02</div>
+            <div class="step-code">[0x02, win1, win2, win3]</div>
+            <div class="step-detail">状态变化立即发送；无变化时每 10 s 心跳补发一次</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <div class="step-title">MCU 更新 LED</div>
+            <div class="step-detail">hid_out_ready_cb → led_set_win_states() → WS2812 输出</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Yes/No 确认 -->
+    <div class="flow-card">
+      <h3>
+        <div class="flow-icon fi-yellow">🔐</div>
+        Yes / No 确认（gate 模式）
+      </h3>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <div class="step-title">gate_hook.py 拦截工具</div>
+            <div class="step-detail">PreToolUse 触发，写入 pending 工具信息，Claude 阻塞等待</div>
+            <div class="step-code">gate_*.json → pending: {tool, input, ...}</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <div class="step-title">LED 变黄（waiting）</div>
+            <div class="step-detail">_led_sync_thread 检测到 gate pending → 覆盖状态为 waiting → MCU 黄灯</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot" style="border-color:var(--green);color:var(--green)">Y</div>
+          <div class="step-body">
+            <div class="step-title" style="color:var(--green)">Yes —— MCU button1 按下</div>
+            <div class="step-detail">HID IN Report 0x01 → _find_gate_to_allow() → gate decision = allow</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot" style="border-color:var(--green);color:var(--green)">Y</div>
+          <div class="step-body">
+            <div class="step-title" style="color:var(--green)">Yes —— UI 点击 Yes</div>
+            <div class="step-detail">monitor_ui._on_yes() → gate decision = allow</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot" style="border-color:var(--red);color:var(--red)">N</div>
+          <div class="step-body">
+            <div class="step-title" style="color:var(--red)">No —— UI 点击 No</div>
+            <div class="step-detail">monitor_ui._on_no() → gate decision = block → Claude 收到 block 指令终止工具</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">6</div>
+          <div class="step-body">
+            <div class="step-title">gate_hook.py 读取决策</div>
+            <div class="step-detail">0.15 s 轮询间隔，allow → 返回 exit 0；block → stdout 输出 JSON block 指令</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 语音输入 -->
+    <div class="flow-card">
+      <h3>
+        <div class="flow-icon fi-purple">🎙</div>
+        语音输入
+      </h3>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <div class="step-title">MCU 麦克风采集</div>
+            <div class="step-detail">板载 MIC → USB UAC 流 → 16 kHz PCM，上位机收到音频数据</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <div class="step-title">_audio_thread VAD 检测</div>
+            <div class="step-detail">RMS 能量阈值检测语音起止，片段超过 MIN_SEGMENT_S 才送识别</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">3</div>
+          <div class="step-body">
+            <div class="step-title">Whisper 本地识别</div>
+            <div class="step-detail">faster-whisper 模型，beam_size=5 + Silero VAD 过滤，输出纯文本</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">4</div>
+          <div class="step-body">
+            <div class="step-title">写剪贴板 + 回车</div>
+            <div class="step-detail">pyperclip 复制 → pyautogui Ctrl+V + Enter → 直接发送到当前焦点的 Claude Code 窗口</div>
+            <div class="step-code">voice_result.json → UI 语音面板同步显示</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 确认模式开关 -->
+    <div class="flow-card">
+      <h3>
+        <div class="flow-icon fi-purple">⚙️</div>
+        确认模式开关
+      </h3>
+      <div class="flow-steps">
+        <div class="flow-step">
+          <div class="step-dot">1</div>
+          <div class="step-body">
+            <div class="step-title">UI 启动时默认开启</div>
+            <div class="step-detail">monitor_ui 启动 → 检测到新 session → 写 gate 文件 enabled=true</div>
+            <div class="step-code">gate_*.json → {"enabled": true, "pending": null}</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot">2</div>
+          <div class="step-body">
+            <div class="step-title">UI 点击"✓ 确认模式"</div>
+            <div class="step-detail">badge 切换 → _on_gate_toggle() → 写 enabled=false → gate_hook 读到后直接放行所有工具</div>
+          </div>
+        </div>
+        <div class="flow-step">
+          <div class="step-dot" style="border-color:var(--red);color:var(--red)">!</div>
+          <div class="step-body">
+            <div class="step-title" style="color:var(--red)">MCU 端暂不支持切换</div>
+            <div class="step-detail">当前 3 个按键均映射为 allow gate，无 block 和切换确认模式的 HID 路径</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /flow-grid -->
+</section>
+
+<!-- ═══ 4. HID 报文格式 ═══ -->
+<section>
+  <h2>HID 报文格式</h2>
+  <div class="card-wrap">
+    <table class="info-table">
+      <thead>
+        <tr>
+          <th>方向</th>
+          <th>Report ID</th>
+          <th>字节布局</th>
+          <th>含义</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MCU → Host（IN）</td>
+          <td><code style="color:var(--purple)">0x01</code></td>
+          <td><code style="color:var(--cyan)">[0x01, btn_mask]</code><br><span style="font-size:12px;color:var(--muted)">btn_mask: bit0=btn1, bit1=btn2, bit2=btn3</span></td>
+          <td>3 个物理按键的按下/释放状态，按键抬起时发送全 0</td>
+        </tr>
+        <tr>
+          <td>Host → MCU（OUT）</td>
+          <td><code style="color:var(--purple)">0x02</code></td>
+          <td><code style="color:var(--cyan)">[0x02, win1, win2, win3]</code><br><span style="font-size:12px;color:var(--muted)">每个值 0–3，对应 idle/working/waiting/success</span></td>
+          <td>三个窗口的 LED 颜色指令，兼容带/不带 report ID 的 3/4 字节格式</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 5. 功能覆盖状态 ═══ -->
+<section>
+  <h2>功能覆盖状态</h2>
+  <div class="card-wrap">
+    <table class="info-table gap-row">
+      <thead>
+        <tr>
+          <th>功能</th>
+          <th>UI 路径</th>
+          <th>MCU 路径</th>
+          <th>状态</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>LED 状态显示</td>
+          <td>状态面板颜色动画</td>
+          <td>LD2/LD3/LD4 颜色</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+        <tr>
+          <td>Yes 确认（允许工具执行）</td>
+          <td>Yes 按钮</td>
+          <td>button1/2/3 按下</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+        <tr>
+          <td>No 拒绝（阻止工具执行）</td>
+          <td>No 按钮</td>
+          <td>❌ 无路径</td>
+          <td><span class="status-miss">⚠️ MCU 端缺失</span></td>
+        </tr>
+        <tr>
+          <td>确认模式开关</td>
+          <td>✓ 确认模式 badge</td>
+          <td>❌ 无路径</td>
+          <td><span class="status-miss">⚠️ MCU 端缺失</span></td>
+        </tr>
+        <tr>
+          <td>语音指令输入</td>
+          <td>语音面板显示文字</td>
+          <td>板载麦克风 → UAC</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+        <tr>
+          <td>LED 心跳同步</td>
+          <td>—</td>
+          <td>10 s 强制补发</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+        <tr>
+          <td>多窗口（3 Claude 实例）</td>
+          <td>3 个状态面板</td>
+          <td>LD2 / LD3 / LD4</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+        <tr>
+          <td>任务超时自动 idle</td>
+          <td>成功 10 s、活跃 300 s</td>
+          <td>同步更新</td>
+          <td><span class="status-ok">✅ 已实现</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ Footer ═══ -->
+<footer class="page-footer">
+  <span>claude-status-monitor / MCU: RTL8762GKH</span>
+  <span>2026-08-05</span>
+</footer>
+
+</body>
+</html>
