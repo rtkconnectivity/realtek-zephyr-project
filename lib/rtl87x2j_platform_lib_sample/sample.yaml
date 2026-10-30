@@ -1,0 +1,16 @@
+sample:
+  name: RTL87X2J External Platform Library
+tests:
+  sample.app_dev.rtl87x2j_platform_lib:
+    platform_allow:
+      - rtl87x2j_evb/rtl8762jth
+    integration_platforms:
+      - rtl87x2j_evb/rtl8762jth
+    tags:
+      - external
+      - realtek
+    harness: console
+    harness_config:
+      type: one_line
+      regex:
+        - "RTL87X2J external platform library sample running"
