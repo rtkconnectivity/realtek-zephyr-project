@@ -15,7 +15,7 @@ manifest:
   projects:
     - name: zephyr
       remote: rtkconnectivity
-      revision: realtek-main-v4.4
+      revision: 6247fe90ac3a6e0c0b1e3f54c36fffe7a1d14515
       import:
         name-allowlist:
           - cmsis
@@ -38,7 +38,7 @@ manifest:
     #
     - name: hal_realtek
       remote: rtkconnectivity
-      revision: hal_realtek_v4.4
+      revision: b8fc291cd8b14a04ee98a67138155843349cf6ca
       path: modules/hal/realtek
       groups:
         - hal
@@ -46,7 +46,7 @@ manifest:
     - name: mcuboot
       remote: rtkconnectivity
       repo-path: zephyr-mcuboot
-      revision: v4.4-bee
+      revision: 404200c659691138b1bb3cee6f454f427d282199
       path: bootloader/mcuboot
       groups:
         - bootloader
@@ -54,7 +54,7 @@ manifest:
     - name: tf-psa-crypto
       remote: rtkconnectivity
       repo-path: zephyr-tf-psa-crypto
-      revision: v4.4.0-bee-psa-accelerators
+      revision: 99d2472985a3d426c02990efb8a6047df4da8f03
       path: modules/crypto/tf-psa-crypto
       groups:
         - crypto
