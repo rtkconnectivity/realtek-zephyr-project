@@ -1,0 +1,94 @@
+manifest:
+  group-filter:
+  - -bthost
+  - -protected
+  projects:
+  - name: sdk
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/sdk
+    revision: c6ca219196ab94cf43c4a7b6fb428c02abc6b26f
+    path: realtek
+  - name: driver
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver
+    revision: 1151a12cff8588b1f59ac6cba09387384f051bd4
+    path: realtek/driver
+    groups:
+    - driver
+  - name: fmc
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/fmc
+    revision: 3a0278b5a6348b50b17ca956154f6978795bc675
+    path: realtek/driver/fmc
+    groups:
+    - fmc
+  - name: crypto
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/crypto
+    revision: 7882e35c57a96a66eff0eef187847f735be7c14a
+    path: realtek/driver/crypto
+    groups:
+    - crypto
+  - name: kernel
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/kernel
+    revision: 6b3fe8e733227d15eeeced48f8d8a12b6c8ff3a8
+    path: realtek/kernel
+    groups:
+    - kernel
+  - name: soc
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/soc
+    revision: f5a964c5429fd8f4b359133ed0afabe5dcae426f
+    path: realtek/soc
+    groups:
+    - soc
+  - name: phy
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PHY/Dev
+    revision: 5c8afc68a6e9245545f7037bc80793ca426077b9
+    path: realtek/soc/phy/common
+    groups:
+    - phy
+  - name: pm
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PM/Dev
+    revision: d517a4e945fdf5d61f737581f0b9ded3fdf7ebf3
+    path: realtek/soc/pm/common
+    groups:
+    - pm
+  - name: romdriver
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver
+    revision: 0dffa4063cde6742fa808193f4da487b19c9cc25
+    path: realtek/soc/driver
+    groups:
+    - romdriver
+  - name: btcontroller
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerstack
+    revision: 239caa5dd2d96910dcaaf4a904f23e600db7010d
+    path: realtek/subsys/bluetooth/bt_controller/src
+    groups:
+    - btcontroller
+  - name: btcontrollerImage
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerimage
+    revision: fb56703bed416628e545fedda6daacb689ccfbdc
+    path: realtek/subsys/bluetooth/bt_controller/image
+    groups:
+    - btcontrollerImage
+  - name: patch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/syspatch
+    revision: 90ff259612d5a01beb099099a71fee837e3bcc9b
+    path: realtek/patch
+    groups:
+    - patch
+  - name: PHYpatch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PHY/Patch
+    revision: 748c26263b42ccecddb777ebf5d911c3d30a5eb4
+    path: realtek/patch/phy/common
+    groups:
+    - PHYpatch
+  - name: PMpatch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PM/Patch
+    revision: c0b90ac8da7e7067014b8d67625d0b91dcaa7627
+    path: realtek/patch/pm/common
+    groups:
+    - PMpatch
+  self:
+    path: manifest
+    west-commands: west_commands_extention/west-commands.yml
+    userdata:
+      owner: grace_guan
+      build-unmaintain-repo:
+      - bthost
