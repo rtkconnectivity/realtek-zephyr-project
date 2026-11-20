@@ -8,9 +8,13 @@ manifest:
       url-base: https://github.com/rtkconnectivity
     - name: zephyr
       url-base: https://github.com/zephyrproject-rtos
+    - name: pankore
+      url-base: https://github.com/pankore
 
   defaults:
     remote: rtkconnectivity
+
+  group-filter: [-matter]
 
   projects:
     - name: zephyr
@@ -22,6 +26,7 @@ manifest:
           - cmsis_6
           - hal_realtek
           - mbedtls
+          - openthread
           - tf-psa-crypto
           - segger
           - cmsis-dsp
@@ -58,3 +63,10 @@ manifest:
       path: modules/crypto/tf-psa-crypto
       groups:
         - crypto
+
+    - name: connectedhomeip
+      remote: pankore
+      revision: rtl8777g_zephyr_dev
+      path: modules/lib/connectedhomeip
+      groups:
+        - matter
