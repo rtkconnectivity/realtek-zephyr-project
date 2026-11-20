@@ -22,6 +22,7 @@ manifest:
           - cmsis_6
           - hal_realtek
           - mbedtls
+          - openthread
           - tf-psa-crypto
           - segger
           - cmsis-dsp
