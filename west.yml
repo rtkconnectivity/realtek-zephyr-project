@@ -8,9 +8,13 @@ manifest:
       url-base: https://github.com/rtkconnectivity
     - name: zephyr
       url-base: https://github.com/zephyrproject-rtos
+    - name: pankore
+      url-base: https://github.com/pankore
 
   defaults:
     remote: rtkconnectivity
+
+  group-filter: [-matter]
 
   projects:
     - name: zephyr
@@ -59,3 +63,10 @@ manifest:
       path: modules/crypto/tf-psa-crypto
       groups:
         - crypto
+
+    - name: connectedhomeip
+      remote: pankore
+      revision: rtl8777g_zephyr_dev
+      path: modules/lib/connectedhomeip
+      groups:
+        - matter
