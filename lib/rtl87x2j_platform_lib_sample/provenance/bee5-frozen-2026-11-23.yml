@@ -1,0 +1,80 @@
+manifest:
+  projects:
+  - name: sdk
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/sdk
+    revision: 475ac37ca48775b4a0edb1c3a07c331be2689869
+    path: realtek
+  - name: fmc
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/fmc
+    revision: 1b747303ca285b2a6e10076994b0c9de7617ad25
+    path: realtek/driver/fmc
+    groups:
+    - fmc
+  - name: crypto
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver/crypto
+    revision: 862eac6319ce317c7b790b6866b83fda271cd4c3
+    path: realtek/driver/crypto
+    groups:
+    - crypto
+  - name: kernel
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/kernel
+    revision: 52c4ccb151369abf60ed3f43d5c117b5ce4592f6
+    path: realtek/kernel
+    groups:
+    - kernel
+  - name: soc
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/soc
+    revision: 96006a7ce249bf4f3da51fba3fe4a2e8a0c7a4ec
+    path: realtek/soc
+    groups:
+    - soc
+  - name: phy
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PHY/Dev
+    revision: 5c8afc68a6e9245545f7037bc80793ca426077b9
+    path: realtek/soc/phy/common
+    groups:
+    - phy
+  - name: pm
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PM/Dev
+    revision: d517a4e945fdf5d61f737581f0b9ded3fdf7ebf3
+    path: realtek/soc/pm/common
+    groups:
+    - pm
+  - name: romdriver
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/driver
+    revision: 0dffa4063cde6742fa808193f4da487b19c9cc25
+    path: realtek/soc/driver
+    groups:
+    - romdriver
+  - name: btcontroller
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerstack
+    revision: e1f37dd5d86281e629808bcb598134807b96e725
+    path: realtek/subsys/bluetooth/bt_controller/src
+    groups:
+    - btcontroller
+  - name: btcontrollerImage
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/lowerimage
+    revision: 96a4cca264d51ca047b90798fb116ab93c9671bc
+    path: realtek/subsys/bluetooth/bt_controller/image
+    groups:
+    - btcontrollerImage
+  - name: patch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/syspatch
+    revision: 707ac50aa928fe4f6223a2c0f26baeedb694a5e8
+    path: realtek/patch
+    groups:
+    - patch
+  - name: PHYpatch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PHY/Patch
+    revision: 885439b20415cc68ab15bdaf246323175a22df56
+    path: realtek/patch/phy/common
+    groups:
+    - PHYpatch
+  - name: PMpatch
+    url: ssh://cn4soc.rtkbf.com:29418/HoneyRepo/PM/Patch
+    revision: c0b90ac8da7e7067014b8d67625d0b91dcaa7627
+    path: realtek/patch/pm/common
+    groups:
+    - PMpatch
+  self:
+    path: manifest
